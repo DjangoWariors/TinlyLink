@@ -1,0 +1,441 @@
+{% extends "public_base.html" %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://tinlylink.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pricing",
+      "item": "https://tinlylink.com/pricing"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can I try TinlyLink for free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes! Our Free plan lets you create up to 50 links per month with basic analytics. No credit card required. You can also start a 14-day free trial of Pro or Business to test all features."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens when I reach my link limit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "When you reach your monthly limit, you won't be able to create new links until the next billing cycle. Existing links will continue to work. You can upgrade anytime to increase your limits."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel my subscription anytime?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, you can cancel your subscription at any time. You'll continue to have access to paid features until the end of your current billing period."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you offer refunds?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We offer a 14-day money-back guarantee. If you're not satisfied within the first 14 days, contact us for a full refund."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What payment methods do you accept?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We accept all major credit cards (Visa, Mastercard, American Express) through our secure payment processor, Stripe."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I change plans later?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be charged a prorated amount. When downgrading, the change takes effect at the start of your next billing cycle."
+      }
+    },
+
+    {
+      "@type": "Question",
+      "name": "What happens to my links if I downgrade?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your existing links will continue to work. However, if you exceed your new plan's limits, you won't be able to create new links until usage falls within limits or you upgrade."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<section class="pt-24 pb-16 bg-gradient-to-br from-secondary to-secondary-dark">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-6">Simple Transparent Pricing</h1>
+        <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-8">Choose the plan that's right for you. All
+            plans include a 14-day free trial.</p>
+
+        <div class="inline-flex items-center gap-3 bg-white/10 rounded-full p-1">
+            <button onclick="setBilling('monthly')" id="btn-monthly"
+                class="px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-secondary">
+                Monthly
+            </button>
+            <button onclick="setBilling('yearly')" id="btn-yearly"
+                class="px-4 py-2 text-sm font-medium rounded-full transition-colors text-white hover:text-gray-200">
+                Yearly
+                <span class="ml-1.5 text-xs text-primary font-semibold">Save 17%</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-20 -mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+
+            <div class="relative bg-white rounded-2xl border-2 border-gray-200 p-8">
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Free</h3>
+                    <p class="text-gray-500 text-sm mt-1">Perfect for getting started</p>
+                    <div class="mt-4">
+                        <span class="text-4xl font-bold text-gray-900">$0</span>
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">50 links per month</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">10 QR codes per month</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">30-day analytics</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Basic link tracking</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">Custom slugs</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">Password protection</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">Custom domains</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">API access</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">Priority support</span></li>
+                </ul>
+                <a href="/register"
+                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">Get
+                    Started</a>
+            </div>
+
+            <div class="relative bg-white rounded-2xl border-2 border-primary shadow-xl scale-105 z-10 p-8">
+                <div
+                    class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-semibold rounded-full">
+                    Most Popular</div>
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Pro</h3>
+                    <p class="text-gray-500 text-sm mt-1">Best for professionals</p>
+                    <div class="mt-4">
+                        <span class="text-4xl font-bold text-gray-900 price-pro">$9</span>
+                        <span class="text-gray-500">/month</span>
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">500 links per month</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">100 QR codes per month</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">1-year analytics retention</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Advanced analytics</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Custom slugs</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Password protection</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">1 Custom domain</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">API access (1k calls/mo)</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg> <span class="text-gray-400">Priority support</span></li>
+                </ul>
+                <a href="/register?plan=pro"
+                    class="block w-full text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">Start
+                    Free Trial</a>
+            </div>
+
+            <div class="relative bg-white rounded-2xl border-2 border-gray-200 p-8">
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">Business</h3>
+                    <p class="text-gray-500 text-sm mt-1">For teams and enterprises</p>
+                    <div class="mt-4">
+                        <span class="text-4xl font-bold text-gray-900 price-business">$29</span>
+                        <span class="text-gray-500">/month</span>
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Unlimited links</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Unlimited QR codes</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Lifetime analytics</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Advanced analytics</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Custom slugs</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Password protection</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">5 Custom domains</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Unlimited API calls</span></li>
+                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg> <span class="text-gray-600">Priority support</span></li>
+                </ul>
+                <a href="/register?plan=business"
+                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">Start
+                    Free Trial</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Compare Plans</h2>
+            <p class="text-lg text-gray-600">See what's included in each plan</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full max-w-4xl mx-auto">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="py-4 text-left text-sm font-semibold text-gray-900">Feature</th>
+                        <th class="py-4 text-center text-sm font-semibold text-gray-900">Free</th>
+                        <th class="py-4 text-center text-sm font-semibold text-primary">Pro</th>
+                        <th class="py-4 text-center text-sm font-semibold text-gray-900">Business</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Links per month</td>
+                        <td class="py-4 text-center text-sm text-gray-600">50</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">500</td>
+                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">QR codes per month</td>
+                        <td class="py-4 text-center text-sm text-gray-600">10</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">100</td>
+                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Analytics retention</td>
+                        <td class="py-4 text-center text-sm text-gray-600">30 days</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1 year</td>
+                        <td class="py-4 text-center text-sm text-gray-600">Forever</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Custom slugs</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&check;</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Password protection</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&check;</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Custom domains</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1</td>
+                        <td class="py-4 text-center text-sm text-gray-600">5</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">API calls per month</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1,000</td>
+                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Team members</td>
+                        <td class="py-4 text-center text-sm text-gray-600">1</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1</td>
+                        <td class="py-4 text-center text-sm text-gray-600">5</td>
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">Priority support</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&mdash;</td>
+                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-20">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p class="text-lg text-gray-600">Everything you need to know about our pricing</p>
+        </div>
+
+        <div class="space-y-4" id="faq-container">
+
+        </div>
+    </div>
+</section>
+
+
+<section class="py-20 bg-secondary">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Still have questions?</h2>
+        <p class="text-lg text-gray-300 mb-8">Our team is here to help. Contact us anytime.</p>
+        <a href="/contact"
+            class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-secondary bg-white hover:bg-gray-100">
+            Contact Sales
+        </a>
+    </div>
+</section>
+
+<script>
+    const faqs = [
+        { q: 'Can I try TinlyLink for free?', a: 'Yes! Our Free plan lets you create up to 50 links per month with basic analytics. No credit card required. You can also start a 14-day free trial of Pro or Business to test all features.' },
+        { q: 'What happens when I reach my link limit?', a: "When you reach your monthly limit, you won't be able to create new links until the next billing cycle. Existing links will continue to work. You can upgrade anytime to increase your limits." },
+        { q: 'Can I cancel my subscription anytime?', a: "Yes, you can cancel your subscription at any time. You'll continue to have access to paid features until the end of your current billing period." },
+        { q: 'Do you offer refunds?', a: "We offer a 14-day money-back guarantee. If you're not satisfied within the first 14 days, contact us for a full refund." },
+        { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, Mastercard, American Express) through our secure payment processor, Stripe.' },
+        { q: 'Can I change plans later?', a: "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be charged a prorated amount. When downgrading, the change takes effect at the start of your next billing cycle." },
+
+        { q: 'What happens to my links if I downgrade?', a: "Your existing links will continue to work. However, if you exceed your new plan's limits, you won't be able to create new links until usage falls within limits or you upgrade." },
+    ];
+    const faqContainer = document.getElementById('faq-container');
+    faqs.forEach((faq, index) => {
+        const div = document.createElement('div');
+        div.className = 'bg-white rounded-lg border border-gray-200 overflow-hidden';
+        div.innerHTML = `
+            <button onclick="toggleFaq(${index})" class="w-full px-6 py-4 flex items-center justify-between text-left">
+                <span class="font-medium text-gray-900">${faq.q}</span>
+                <svg id="faq-icon-${index}" class="w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div id="faq-ans-${index}" class="hidden px-6 pb-4 text-gray-600">${faq.a}</div>
+        `;
+        faqContainer.appendChild(div);
+    });
+
+    function toggleFaq(index) {
+        const ans = document.getElementById(`faq-ans-${index}`);
+        const icon = document.getElementById(`faq-icon-${index}`);
+        ans.classList.toggle('hidden');
+        icon.classList.toggle('rotate-180');
+    }
+
+    function setBilling(cycle) {
+        const monthlyBtn = document.getElementById('btn-monthly');
+        const yearlyBtn = document.getElementById('btn-yearly');
+        const pricePro = document.querySelector('.price-pro');
+        const priceBiz = document.querySelector('.price-business');
+
+        if (cycle === 'monthly') {
+            monthlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-secondary';
+            yearlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors text-white hover:text-gray-200';
+            pricePro.textContent = '$9';
+            priceBiz.textContent = '$29';
+        } else {
+            monthlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors text-white hover:text-gray-200';
+            yearlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-secondary';
+            pricePro.textContent = '$7.5'; // 90 / 12
+            priceBiz.textContent = '$24';  // 290 / 12
+        }
+    }
+</script>
+{% endblock %}

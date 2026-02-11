@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /health/
+Disallow: /metrics/
+Disallow: /dashboard/
+
+Sitemap: https://tinlylink.com/sitemap.xml

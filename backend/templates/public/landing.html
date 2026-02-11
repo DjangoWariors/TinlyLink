@@ -1,0 +1,733 @@
+{% extends "public_base.html" %}
+
+{% block structured_data %}
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "TinlyLink",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "Shorten URLs, generate branded QR codes, and understand your audience with click analytics."
+        }
+    </script>
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://tinlylink.com/"
+            }
+          ]
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+
+    <section class="pt-32 pb-24 bg-gradient-to-br from-secondary to-secondary-dark overflow-hidden">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl sm:text-5xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
+                URL Shortener with Analytics <span class="text-primary">& Branded QR Codes</span>
+            </h1>
+
+            <p class="text-lg sm:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl mx-auto">
+                With TinlyLink, turn long URLs into branded short links and QR codes backed by
+                powerful analytics. Track clicks, geographic insights, and devices to make smarter
+                business decisions.
+            </p>
+
+
+            <div class="max-w-xl mx-auto">
+                <form id="shorten-form"
+                      class="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-xl shadow-lg">
+                    {% csrf_token %}
+                    <input id="url-input" type="url" placeholder="Paste your long URL here..."
+                           class="flex-1 px-4 py-3 text-gray-900 rounded-lg focus:outline-none border-0" required>
+                    <button id="shorten-btn" type="submit"
+                            class="whitespace-nowrap px-8 py-3 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                        <span id="btn-text">Shorten Link</span>
+                        <svg id="btn-arrow" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                        <svg id="btn-spinner" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                    </button>
+                </form>
+
+
+                <div id="shorten-result" class="hidden mt-4 p-4 bg-white rounded-xl shadow-lg">
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <div class="flex-1 min-w-0 w-full">
+                            <p class="text-xs text-gray-500 mb-1 truncate" id="result-original"></p>
+                            <a id="result-url" href="#" target="_blank"
+                               class="text-lg font-semibold text-primary hover:text-primary-dark truncate block"></a>
+                        </div>
+                        <button id="copy-btn" type="button"
+                                class="whitespace-nowrap px-5 py-2 bg-secondary hover:bg-secondary-dark text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+                            </svg>
+                            <span id="copy-text">Copy</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="shorten-error"
+                     class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center"></div>
+            </div>
+
+
+            <div class="flex flex-wrap items-center justify-center gap-6 mt-10 text-white/70 text-sm">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>No credit card required</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Free forever plan</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Setup in seconds</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-16 bg-white" id="dashboard-preview-wrapper">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="rounded-2xl overflow-hidden shadow-2xl border border-gray-200 -mt-28">
+
+                <img
+                        src="/static/images/hero-dashboard.png"
+                        alt="TinlyLink dashboard showing link analytics, click maps, and QR code management"
+                        class="w-full h-auto"
+                        loading="eager"
+                        onerror="document.getElementById('dashboard-preview-wrapper').style.display='none'"
+                >
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 max-w-3xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Everything you need to manage, track, and optimize your links
+                </h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    TinlyLink brings URL shortening, QR codes, and analytics together in one place.
+                    No switching between tools. No spreadsheets. Just paste, share, and learn.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Link shortening</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Turn any URL into a clean, memorable link. Pick a custom back-half like
+                        <span class="font-medium text-gray-800">tinlylink.com/launch</span> or let us
+                        generate one for you. Links are permanent, redirect instantly, and work everywhere —
+                        social media, email, print, or SMS.
+                    </p>
+                </div>
+
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Branded QR codes</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Generate fully branded QR codes with customizable colors, logos, and design styles. Dynamic QR
+                        codes allow you to change the destination URL without reprinting, making them ideal for
+                        packaging and physical marketing materials.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Click analytics</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        See how people interact with your links  where they’re coming from, what devices they use, and
+                        when they’re most active. Understand which campaigns are working and which channels actually
+                        drive traffic, without relying on guesswork.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Custom domains</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Use your own domain for short links instead of a generic URL shortener domain.
+                        Links from <span class="font-medium text-gray-800">yourbrand.co/demo</span>
+                        build more trust with your audience and get higher click-through rates than
+                        unfamiliar short domains.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Campaign tracking</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Group links into campaigns and add UTM parameters without manually editing URLs.
+                        Compare performance across channels — social, email, paid ads, or QR codes —
+                        all from a single dashboard. Find what works, drop what doesn't.
+                    </p>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg hover:border-primary/20 transition-all duration-200">
+                    <div class="w-12 h-12 bg-primary-50 rounded-lg flex items-center justify-center text-primary mb-5">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 010 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Team workspaces</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Invite your team and work together. Create shared link libraries, view collective
+                        analytics, and manage QR codes across your organization. Role-based access keeps
+                        everything organized as your team grows.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 max-w-3xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    From long URL to actionable insight in three steps
+                </h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    No complicated setup. No training required. Paste a link, share it, and watch the data come in.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-2xl mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xs font-bold text-primary uppercase tracking-widest mb-2">Step 1</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Paste your URL</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Drop any link into TinlyLink — a blog post, product page, event registration,
+                        or anything else. We create a short, trackable version instantly. You can
+                        customize the slug, set an expiration, or password-protect it.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-2xl mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                        </svg>
+                    </div>
+                    <div class="text-xs font-bold text-primary uppercase tracking-widest mb-2">Step 2</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Share it anywhere</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Put your short link in emails, social posts, text messages, presentations,
+                        or printed materials. Generate a QR code for offline use. Every click
+                        is tracked automatically — no extra code or tags required.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 text-primary rounded-2xl mb-6">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="text-xs font-bold text-primary uppercase tracking-widest mb-2">Step 3</div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">See what happened</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Open your dashboard to see clicks over time, geographic breakdown, device types,
+                        and referral sources. Compare campaigns side by side to understand what's
+                        resonating with your audience and where to focus next.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+                <div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                        Know exactly where your clicks come from
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        TinlyLink doesn't just count clicks — it tells you the story behind each one.
+                        Every link you share collects data that helps you understand your audience better.
+                        See which channels actually drive traffic and stop wasting time on the ones that don't.
+                    </p>
+
+                    <div class="space-y-5">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Geographic breakdown</h3>
+                                <p class="text-gray-600 text-sm">See clicks by country and city. Understand where your
+                                    audience actually lives — useful for targeting ads, planning events, or localizing
+                                    content.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Device and browser data</h3>
+                                <p class="text-gray-600 text-sm">Know whether visitors are on mobile or desktop, iOS or
+                                    Android, Chrome or Safari. Make sure your landing pages work where your audience
+                                    actually browses.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Click timeline</h3>
+                                <p class="text-gray-600 text-sm">Track clicks by hour, day, or week. Spot peak
+                                    engagement times and schedule your posts and promotions when your audience is most
+                                    active.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                    <polyline points="2 17 12 22 22 17"></polyline>
+                                    <polyline points="2 12 12 17 22 12"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Referrer tracking</h3>
+                                <p class="text-gray-600 text-sm">See which websites, social platforms, and apps are
+                                    sending traffic your way. Know exactly where each click originated.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 lg:mt-0" id="analytics-image-wrapper">
+                    <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                        <img
+                                src="/static/images/analytics-dashboard.webp"
+                                alt="TinlyLink analytics dashboard showing click charts, geographic data, and device breakdown"
+                                class="w-full h-auto"
+                                loading="lazy"
+                                onerror="document.getElementById('analytics-image-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z\'></path></svg><p class=\'text-sm\'>Analytics dashboard screenshot</p></div>'"
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+
+                <div class="order-2 lg:order-1 mt-12 lg:mt-0" id="qr-image-wrapper">
+                    <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                        <img
+                                src="/static/images/qr-codes-showcase.webp"
+                                alt="Custom branded QR codes generated with TinlyLink showing different styles and color options"
+                                class="w-full h-auto"
+                                loading="lazy"
+                                onerror="document.getElementById('qr-image-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z\'></path></svg><p class=\'text-sm\'>QR codes showcase screenshot</p></div>'"
+                        >
+                    </div>
+                </div>
+
+                <div class="order-1 lg:order-2">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                        QR codes that match your brand
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+                        Plain black-and-white QR codes get ignored on packaging, flyers, and business cards.
+                        TinlyLink lets you customize every aspect — colors, patterns, and logo —
+                        so your QR codes look intentional, not like an afterthought.
+                    </p>
+
+                    <div class="space-y-5">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Full color and style customization</h3>
+                                <p class="text-gray-600 text-sm">Set foreground and background colors to match your
+                                    brand. Choose square, rounded, or dot patterns. Add your logo to the center.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Dynamic QR codes</h3>
+                                <p class="text-gray-600 text-sm">Change where a QR code points after it's printed.
+                                    Update the destination URL at any time without reprinting menus, packaging, or
+                                    signage.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                     viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">Download in any format</h3>
+                                <p class="text-gray-600 text-sm">Export as PNG for digital use, SVG for scalable print
+                                    materials, or PDF for professional layouts. Every format is high resolution.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 max-w-3xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Built for people who share links every day
+                </h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    If you share links as part of your work — in marketing campaigns, product launches,
+                    client communications, or community building — TinlyLink helps you do it better.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Marketers</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Track campaign performance across social, email, and paid channels.
+                        Tag links with UTM parameters, group them into campaigns, and compare
+                        results with visual reports.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Developers</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Create short links programmatically via our REST API. Integrate link shortening
+                        into your apps, bots, CMS, or internal tools. Well-documented with predictable
+                        JSON responses.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 010 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Teams</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Collaborate with shared workspaces. Team members can create links,
+                        view collective analytics, and manage QR codes together — all under
+                        one organized account with role-based access.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Small businesses</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">
+                        Put branded short links on business cards, receipts, and packaging.
+                        Use QR codes to connect print materials to your website, menu, or
+                        booking page — without needing expensive marketing tools.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 max-w-3xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Your links stay live. Your data stays private.
+                </h2>
+                <p class="text-lg text-gray-600 leading-relaxed">
+                    We take link reliability and data privacy seriously. Short links redirect
+                    in milliseconds, and we never sell or share your analytics data with anyone.
+                </p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">HTTPS everywhere</h3>
+                    <p class="text-gray-600 text-sm">Every short link uses HTTPS. No exceptions, no configuration
+                        needed.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Fast redirects</h3>
+                    <p class="text-gray-600 text-sm">Lightweight redirect engine. Your visitors won't notice the
+                        hop.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Permanent links</h3>
+                    <p class="text-gray-600 text-sm">Links don't expire unless you set a date. They work for as long as
+                        you need them.</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-lg text-primary mb-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-1">Password protection</h3>
+                    <p class="text-gray-600 text-sm">Lock sensitive links behind a password. Only people with the code
+                        can access the destination.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="py-24 bg-secondary">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+                Start shortening links today
+            </h2>
+            <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+                Create a free account in under a minute. No credit card, no commitment.
+                When you're ready for more features, upgrade anytime.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/register"
+                   class="inline-flex items-center justify-center px-10 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors text-lg gap-2">
+                    Create Free Account
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </a>
+                <a href="/features"
+                   class="inline-flex items-center justify-center px-10 py-3.5 border border-white/30 text-white hover:bg-white/10 rounded-lg font-medium transition-colors text-lg">
+                    Explore All Features
+                </a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        (function () {
+            const form = document.getElementById('shorten-form');
+            const urlInput = document.getElementById('url-input');
+            const btnText = document.getElementById('btn-text');
+            const btnArrow = document.getElementById('btn-arrow');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const shortenBtn = document.getElementById('shorten-btn');
+            const resultDiv = document.getElementById('shorten-result');
+            const resultUrl = document.getElementById('result-url');
+            const resultOriginal = document.getElementById('result-original');
+            const errorDiv = document.getElementById('shorten-error');
+            const copyBtn = document.getElementById('copy-btn');
+            const copyText = document.getElementById('copy-text');
+
+            function setLoading(loading) {
+                shortenBtn.disabled = loading;
+                btnText.textContent = loading ? 'Shortening...' : 'Shorten Link';
+                btnArrow.classList.toggle('hidden', loading);
+                btnSpinner.classList.toggle('hidden', !loading);
+            }
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                resultDiv.classList.add('hidden');
+                errorDiv.classList.add('hidden');
+                setLoading(true);
+
+                try {
+                    const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+                    const res = await fetch('/api/v1/links/public/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({original_url: urlInput.value})
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        const msg = data.original_url
+                            ? data.original_url.join(' ')
+                            : (data.detail || 'Something went wrong. Please try again.');
+                        throw new Error(msg);
+                    }
+
+                    resultOriginal.textContent = urlInput.value;
+                    resultUrl.textContent = data.short_url;
+                    resultUrl.href = data.short_url;
+                    resultDiv.classList.remove('hidden');
+                    urlInput.value = '';
+                    copyText.textContent = 'Copy';
+                } catch (err) {
+                    errorDiv.textContent = err.message;
+                    errorDiv.classList.remove('hidden');
+                } finally {
+                    setLoading(false);
+                }
+            });
+
+            copyBtn.addEventListener('click', function () {
+                navigator.clipboard.writeText(resultUrl.textContent).then(function () {
+                    copyText.textContent = 'Copied!';
+                    setTimeout(function () {
+                        copyText.textContent = 'Copy';
+                    }, 2000);
+                });
+            });
+        })();
+    </script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "public_base.html" %}
+
+{% block robots %}index, follow{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Us - TinlyLink",
+    "description": "Get in touch with the TinlyLink team.",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://tinlylink.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Contact"}
+        ]
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="pt-28 pb-12 bg-gradient-to-b from-gray-50 to-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-3xl sm:text-4xl font-bold text-secondary mb-4">Get in Touch</h1>
+        <p class="text-lg text-gray-600 max-w-xl mx-auto">
+            Have a question, found a bug, or want to explore a partnership? We'd like to hear from you.
+            Fill out the form below and we'll respond within 1-2 business days.
+        </p>
+    </div>
+</section>
+
+<!-- Contact Form + Info -->
+<section class="pb-20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-5 gap-12">
+
+            <!-- Form Column -->
+            <div class="lg:col-span-3">
+                {% if success %}
+                <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-green-800 mb-2">Message sent</h3>
+                    <p class="text-green-700 text-sm">
+                        Thanks for reaching out. We've sent a confirmation to your email and will get back to you within 1-2 business days.
+                    </p>
+                    <a href="/contact" class="inline-block mt-4 text-sm font-medium text-green-700 hover:text-green-900 underline">
+                        Send another message
+                    </a>
+                </div>
+                {% else %}
+
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    {% for error in form.non_field_errors %}
+                    <p class="text-sm text-red-700">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" action="/contact" class="space-y-5">
+                    {% csrf_token %}
+
+                    <!-- Name -->
+                    <div>
+                        <label for="id_name" class="block text-sm font-medium text-gray-700 mb-1.5">Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subject -->
+                    <div>
+                        <label for="id_subject" class="block text-sm font-medium text-gray-700 mb-1.5">Topic</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Message -->
+                    <div>
+                        <label for="id_message" class="block text-sm font-medium text-gray-700 mb-1.5">Message</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-gray-400">Max 5,000 characters</p>
+                    </div>
+
+                    <!-- Submit -->
+                    <div>
+                        <button type="submit"
+                            class="w-full sm:w-auto inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 px-8 py-3 text-sm bg-primary text-white hover:bg-primary-dark focus:ring-primary">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Info Column -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Email -->
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-secondary mb-1">Email</h3>
+                        <p class="text-sm text-gray-600">
+                            <a href="mailto:support@tinlylink.com" class="text-primary hover:text-primary-dark">support@tinlylink.com</a>
+                        </p>
+                        <p class="text-xs text-gray-400 mt-1">General questions and support</p>
+                    </div>
+                </div>
+
+                <!-- Response Time -->
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-secondary mb-1">Response Time</h3>
+                        <p class="text-sm text-gray-600">1-2 business days</p>
+                        <p class="text-xs text-gray-400 mt-1">We read every message personally</p>
+                    </div>
+                </div>
+
+                <!-- Bug Reports -->
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-secondary mb-1">Bug Reports</h3>
+                        <p class="text-sm text-gray-600">Include steps to reproduce the issue and your browser/device info. Screenshots help too.</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <hr class="border-gray-200">
+
+                <!-- FAQ Shortcuts -->
+                <div>
+                    <h3 class="text-sm font-semibold text-secondary mb-3">Before you write</h3>
+                    <p class="text-sm text-gray-600 mb-3">
+                        You might find your answer in one of these:
+                    </p>
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="/features" class="text-sm text-primary hover:text-primary-dark flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                Features overview
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/pricing" class="text-sm text-primary hover:text-primary-dark flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                Pricing and plans
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/api/redoc" target="_blank" class="text-sm text-primary hover:text-primary-dark flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                API documentation
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/blog" class="text-sm text-primary hover:text-primary-dark flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                Blog and guides
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Specific Emails -->
+                <div class="bg-gray-50 rounded-xl p-5">
+                    <h3 class="text-sm font-semibold text-secondary mb-3">Direct email addresses</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex justify-between">
+                            <span>General</span>
+                            <a href="mailto:support@tinlylink.com" class="text-primary hover:text-primary-dark">support@tinlylink.com</a>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Billing</span>
+                            <a href="mailto:billing@tinlylink.com" class="text-primary hover:text-primary-dark">billing@tinlylink.com</a>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Privacy</span>
+                            <a href="mailto:privacy@tinlylink.com" class="text-primary hover:text-primary-dark">privacy@tinlylink.com</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

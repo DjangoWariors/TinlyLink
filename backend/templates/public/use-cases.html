@@ -1,0 +1,492 @@
+{% extends "public_base.html" %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://tinlylink.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Use Cases",
+      "item": "https://tinlylink.com/use-cases"
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<section class="pt-32 pb-20 bg-gradient-to-br from-secondary to-secondary-dark">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
+            How People Use <span class="text-primary">TinlyLink</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Whether you are running marketing campaigns, building software, managing a small business,
+            or working with a team here's how TinlyLink fits into your workflow.
+        </p>
+    </div>
+</section>
+
+
+<section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary text-xs font-semibold rounded-full mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                    For Marketers
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                    Know which campaigns actually drive results
+                </h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    Marketing involves sharing links across many channels social media, email newsletters,
+                    paid ads, influencer partnerships, and more. Without proper tracking, you're guessing
+                    which channel performs best. TinlyLink gives you the data to stop guessing.
+                </p>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    Create a short link for each channel, tag it with UTM parameters using the built-in campaign
+                    builder, and watch the results come in. Compare click-through rates between your Instagram bio
+                    link and your email newsletter link. See if your Twitter audience is more engaged on mobile
+                    or desktop. Identify which countries your LinkedIn posts reach.
+                </p>
+
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Common marketing workflows</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Social media campaigns</span>
+                            <p class="text-sm text-gray-600">Create separate short links for each platform. Compare Instagram vs Twitter vs LinkedIn performance in one dashboard.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Email newsletter tracking</span>
+                            <p class="text-sm text-gray-600">Track click-through rates from weekly newsletters and drip campaigns. See which links get the most engagement per send.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">UTM-tagged links</span>
+                            <p class="text-sm text-gray-600">Use the built-in UTM builder to tag source, medium, and campaign. No more manually appending query strings to URLs.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Branded links for trust</span>
+                            <p class="text-sm text-gray-600">Use a custom domain so your links match your brand. People are more likely to click a link from yourbrand.co than a generic shortener.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 lg:mt-0" id="marketer-screenshot-wrapper">
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                    <img
+                        src="/static/images/usecase-marketing.png"
+                        alt="TinlyLink campaign dashboard showing UTM-tagged links with click analytics across channels"
+                        class="w-full h-auto"
+                        loading="lazy"
+                        onerror="document.getElementById('marketer-screenshot-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><polyline points=\'23 6 13.5 15.5 8.5 10.5 1 18\'></polyline><polyline points=\'17 6 23 6 23 12\'></polyline></svg><p class=\'text-sm\'>Campaign dashboard screenshot</p></div>'"
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <!-- Code example -->
+            <div class="order-2 lg:order-1 mt-12 lg:mt-0">
+                <div class="bg-gray-900 rounded-2xl p-6 overflow-x-auto shadow-xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-xs text-gray-500 ml-2">api-example.js</span>
+                    </div>
+                    <pre class="text-sm text-gray-300 leading-relaxed"><code><span class="text-green-400">// Create a short link via the API</span>
+<span class="text-blue-400">const</span> response = <span class="text-blue-400">await</span> fetch(<span class="text-yellow-300">'https://tinlylink.com/api/v1/links/'</span>, {
+  method: <span class="text-yellow-300">'POST'</span>,
+  headers: {
+    <span class="text-yellow-300">'Authorization'</span>: <span class="text-yellow-300">`Bearer ${apiKey}`</span>,
+    <span class="text-yellow-300">'Content-Type'</span>: <span class="text-yellow-300">'application/json'</span>,
+  },
+  body: JSON.stringify({
+    original_url: <span class="text-yellow-300">'https://example.com/my-page'</span>,
+    custom_slug: <span class="text-yellow-300">'my-link'</span>,
+  }),
+});
+
+<span class="text-blue-400">const</span> { short_url, slug } = <span class="text-blue-400">await</span> response.json();
+console.log(short_url);
+<span class="text-green-400">// → https://tinlylink.com/my-link</span>
+
+<span class="text-green-400">// Fetch click analytics</span>
+<span class="text-blue-400">const</span> stats = <span class="text-blue-400">await</span> fetch(
+  <span class="text-yellow-300">`https://tinlylink.com/api/v1/analytics/clicks/?link=${slug}`</span>,
+  { headers: { <span class="text-yellow-300">'Authorization'</span>: <span class="text-yellow-300">`Bearer ${apiKey}`</span> } }
+);
+<span class="text-blue-400">const</span> { total_clicks, by_country } = <span class="text-blue-400">await</span> stats.json();</code></pre>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <a href="/api" class="inline-flex items-center gap-2 text-primary hover:text-primary-dark font-medium text-sm">
+                        View full API documentation
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="order-1 lg:order-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary text-xs font-semibold rounded-full mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    For Developers
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                    Build link shortening into your product
+                </h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    If your app or service generates shareable URLs user profiles, content pages,
+                    referral links, receipts you can use the TinlyLink API to shorten them automatically.
+                    No need to build and maintain your own shortening infrastructure.
+                </p>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    Our REST API supports creating, reading, updating, and deleting links with simple JSON
+                    requests. Bulk endpoints let you shorten hundreds of URLs in a single call. Analytics
+                    endpoints give you programmatic access to click data for dashboards and reports.
+                </p>
+
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">What you can build</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">CMS integrations</span>
+                            <p class="text-sm text-gray-600">Auto-shorten URLs when content is published. Works with any CMS that supports webhooks or API calls.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Chat bots and automation</span>
+                            <p class="text-sm text-gray-600">Generate trackable short links inside Slack bots, Discord bots, or Zapier workflows.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Custom analytics dashboards</span>
+                            <p class="text-sm text-gray-600">Pull click data via API and display it in your own internal dashboards alongside other metrics.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Transactional emails</span>
+                            <p class="text-sm text-gray-600">Shorten links in order confirmations, password resets, or notification emails. Track open rates via link clicks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary text-xs font-semibold rounded-full mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path>
+                    </svg>
+                    For Small Businesses
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                    Connect your offline and online presence
+                </h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    Restaurants, retail shops, salons, real estate agents, event organizers if your business
+                    exists in the physical world, you need a way to bridge the gap between print and digital.
+                    QR codes on menus, signage, and business cards are the simplest way to do that.
+                </p>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    TinlyLink makes it easy to create branded QR codes that point to your website, booking page,
+                    menu, or social profiles. Dynamic QR codes mean you can update the destination anytime
+                    change your seasonal menu or update event details without reprinting a single thing.
+                </p>
+
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Practical examples</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Restaurant menus</span>
+                            <p class="text-sm text-gray-600">Print a QR code on table tents that links to your online menu. Update menu items or prices without reprinting the QR code stays the same.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Business cards</span>
+                            <p class="text-sm text-gray-600">Add a branded short link or QR code to your card that points to your portfolio, booking page, or LinkedIn profile.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Product packaging</span>
+                            <p class="text-sm text-gray-600">Link to setup guides, warranty registration, or customer support directly from the product box. Track scan rates across product lines.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Event promotion</span>
+                            <p class="text-sm text-gray-600">Put QR codes on flyers and posters that link to your event page or ticket purchase. See how many people scanned from each location.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 lg:mt-0" id="business-screenshot-wrapper">
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                    <img
+                        src="/static/images/usecase-business.png"
+                        alt="TinlyLink QR code editor with branded colors and logo, ready for print on business cards and packaging"
+                        class="w-full h-auto"
+                        loading="lazy"
+                        onerror="document.getElementById('business-screenshot-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path d=\'M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z\'></path></svg><p class=\'text-sm\'>QR code for business screenshot</p></div>'"
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <div class="order-2 lg:order-1 mt-12 lg:mt-0" id="team-screenshot-wrapper">
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                    <img
+                        src="/static/images/usecase-teams.png"
+                        alt="TinlyLink team workspace showing shared links, member roles, and team analytics"
+                        class="w-full h-auto"
+                        loading="lazy"
+                        onerror="document.getElementById('team-screenshot-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path d=\'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2\'></path><circle cx=\'9\' cy=\'7\' r=\'4\'></circle><path d=\'M23 21v-2a4 4 0 00-3-3.87\'></path><path d=\'M16 3.13a4 4 0 010 7.75\'></path></svg><p class=\'text-sm\'>Team workspace screenshot</p></div>'"
+                    >
+                </div>
+            </div>
+
+            <div class="order-1 lg:order-2">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary text-xs font-semibold rounded-full mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 010 7.75"></path>
+                    </svg>
+                    For Teams
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                    Collaborate on links across your organization
+                </h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    When multiple people in your organization share links marketing, sales, support,
+                    partnerships things get messy fast. Who created which link? Where are the analytics?
+                    Which domain should we use?
+                </p>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    TinlyLink team workspaces bring everyone's links into one shared space. Each team member
+                    can create links and QR codes, view collective analytics, and manage campaigns while
+                    keeping personal links separate. Role-based access means you control who can do what.
+                </p>
+
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Team features</h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Shared link library</span>
+                            <p class="text-sm text-gray-600">All team links are visible to every member. No more asking "who has the link to that page?"</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Role-based access</span>
+                            <p class="text-sm text-gray-600">Owners manage billing and settings. Admins can invite members. Members can create links and view analytics.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Email invitations</span>
+                            <p class="text-sm text-gray-600">Invite teammates by email. They get a link to join your workspace existing users connect instantly, new users sign up first.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Separate personal and team data</span>
+                            <p class="text-sm text-gray-600">Switch between your personal workspace and team workspaces. Links and analytics are cleanly separated.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-primary-50 text-primary text-xs font-semibold rounded-full mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                    For Content Creators
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                    Make every link in your bio count
+                </h2>
+                <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                    YouTubers, podcasters, bloggers, and newsletter writers share links constantly
+                    in video descriptions, show notes, social bios, and email footers. Short links keep
+                    things clean, and analytics tell you what your audience actually cares about.
+                </p>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    Create memorable branded links for your most important pages. Track which content
+                    drives the most clicks. See if your YouTube audience overlaps with your newsletter
+                    readers. All without complex marketing tools.
+                </p>
+
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Clean bio links</span>
+                            <p class="text-sm text-gray-600">Use custom slugs like tinlylink.com/podcast or tinlylink.com/shop for memorable, shareable URLs.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Audience insights</span>
+                            <p class="text-sm text-gray-600">See where your audience is geographically, what devices they use, and what time they're most active.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <div>
+                            <span class="font-medium text-gray-900">Channel comparison</span>
+                            <p class="text-sm text-gray-600">Create separate links for the same page across YouTube, Instagram, and Twitter. Compare which platform sends the most engaged traffic.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 lg:mt-0" id="creator-screenshot-wrapper">
+                <div class="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
+                    <img
+                        src="/static/images/usecase-creators.png"
+                        alt="TinlyLink showing branded short links for content creators with click analytics per platform"
+                        class="w-full h-auto"
+                        loading="lazy"
+                        onerror="document.getElementById('creator-screenshot-wrapper').innerHTML='<div class=\'p-16 text-center text-gray-300 bg-gray-50 border border-dashed border-gray-200 rounded-2xl\'><svg class=\'w-12 h-12 mx-auto mb-3 text-gray-200\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z\'></path></svg><p class=\'text-sm\'>Content creator dashboard screenshot</p></div>'"
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="py-24 bg-secondary">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">See how TinlyLink fits your workflow</h2>
+        <p class="text-lg text-gray-300 mb-8 leading-relaxed">
+            Create a free account and try it yourself. Start with a single link and see the analytics
+            in action no credit card required.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/register"
+                class="w-full sm:w-auto px-10 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium transition-colors text-lg">
+                Get Started Free
+            </a>
+            <a href="/pricing"
+                class="w-full sm:w-auto px-10 py-3.5 bg-transparent hover:bg-white/10 text-white border border-white/30 rounded-lg font-medium transition-colors text-lg">
+                View Pricing
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

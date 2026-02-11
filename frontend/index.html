@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="TinlyLink" />
+    <meta name="application-name" content="TinlyLink" />
+    <meta name="msapplication-TileColor" content="#f6821f" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Primary Meta Tags -->
+    <title>TinlyLink - URL Shortener & QR Code Generator</title>
+    <meta name="title" content="TinlyLink - URL Shortener & QR Code Generator" />
+    <meta name="description" content="Shorten URLs, generate branded QR codes, and understand your audience with click analytics. Free to start, built for marketers, developers, and small businesses." />
+    <meta name="keywords" content="url shortener, link shortener, qr code generator, link tracking, analytics, custom domains, tinlylink" />
+    <meta name="author" content="TinlyLink" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#f6821f" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1e3a5f" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tinlylink.com/" />
+    <meta property="og:title" content="TinlyLink - URL Shortener & QR Code Generator" />
+    <meta property="og:description" content="Shorten URLs, generate branded QR codes, and understand your audience with click analytics. Free to start." />
+    <meta property="og:image" content="https://tinlylink.com/og-image.png" />
+    <meta property="og:site_name" content="TinlyLink" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://tinlylink.com/" />
+    <meta name="twitter:title" content="TinlyLink - URL Shortener & QR Code Generator" />
+    <meta name="twitter:description" content="Shorten URLs, generate branded QR codes, and understand your audience with click analytics. Free to start." />
+    <meta name="twitter:image" content="https://tinlylink.com/og-image.png" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "TinlyLink",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "URL Shortener & QR Code Generator with Analytics",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

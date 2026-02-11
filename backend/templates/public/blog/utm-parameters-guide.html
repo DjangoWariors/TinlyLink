@@ -1,0 +1,158 @@
+{% extends "public/blog_base.html" %}
+
+{% block article_content %}
+    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+        UTM parameters are the backbone of campaign tracking. If you're running any kind of digital marketing email,
+        social media, paid ads UTM tags are how you connect clicks to campaigns in your analytics platform. This
+        guide covers everything you need to know.
+    </p>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">What Are UTM Parameters?</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        UTM (Urchin Tracking Module) parameters are tags added to the end of a URL. When someone clicks a link with UTM
+        parameters, those tags are sent to your analytics tool (like Google Analytics), so you can see exactly where
+        your traffic comes from.
+    </p>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        A URL with UTM parameters looks like this:
+    </p>
+    <div class="bg-gray-50 rounded-lg p-4 mb-6 overflow-x-auto">
+        <code class="text-sm text-gray-800">https://example.com/page?<span
+                class="text-primary font-medium">utm_source</span>=twitter&<span class="text-primary font-medium">utm_medium</span>=social&<span
+                class="text-primary font-medium">utm_campaign</span>=spring_sale</code>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">The 5 UTM Parameters Explained</h2>
+
+    <div class="space-y-6 mb-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">1. utm_source (Required)</h3>
+            <p class="text-gray-600 mb-2">Identifies which platform or site sent the traffic.</p>
+            <p class="text-sm text-gray-500"><strong>Examples:</strong> google, facebook, x, newsletter, linkedin
+            </p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">2. utm_medium (Required)</h3>
+            <p class="text-gray-600 mb-2">Identifies the marketing channel or type of traffic.</p>
+            <p class="text-sm text-gray-500"><strong>Examples:</strong> cpc, email, social, organic, referral, banner
+            </p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">3. utm_campaign (Required)</h3>
+            <p class="text-gray-600 mb-2">Identifies the specific campaign, promotion, or offer.</p>
+            <p class="text-sm text-gray-500"><strong>Examples:</strong> spring_sale, product_launch, black_friday_2025
+            </p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">4. utm_term (Optional)</h3>
+            <p class="text-gray-600 mb-2">Identifies paid search keywords. Useful for PPC campaigns.</p>
+            <p class="text-sm text-gray-500"><strong>Examples:</strong> url+shortener, link+management,
+                qr+code+generator</p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">5. utm_content (Optional)</h3>
+            <p class="text-gray-600 mb-2">Differentiates similar content or links within the same campaign. Great for
+                A/B testing.</p>
+            <p class="text-sm text-gray-500"><strong>Examples:</strong> header_cta, sidebar_banner, footer_link,
+                blue_button</p>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">UTM Best Practices</h2>
+
+    <div class="space-y-4 mb-8">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+                <p class="font-medium text-gray-900">Use lowercase consistently</p>
+                <p class="text-sm text-gray-600">UTM parameters are case-sensitive. "Facebook" and "facebook" will show
+                    as separate sources. Stick to lowercase.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+                <p class="font-medium text-gray-900">Use underscores instead of spaces</p>
+                <p class="text-sm text-gray-600">Spaces get encoded as %20 in URLs, making them hard to read. Use
+                    underscores or hyphens: <code class="text-sm bg-gray-100 px-1 rounded">spring_sale</code> not <code
+                            class="text-sm bg-gray-100 px-1 rounded">spring sale</code>.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+                <p class="font-medium text-gray-900">Create a naming convention document</p>
+                <p class="text-sm text-gray-600">Document your UTM naming rules and share with your team. Consistency is
+                    the key to clean analytics data.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+                <p class="font-medium text-gray-900">Shorten UTM-tagged URLs</p>
+                <p class="text-sm text-gray-600">Long UTM URLs look messy in social posts and emails. Use a URL
+                    shortener like TinlyLink to create clean, trackable short links.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <div>
+                <p class="font-medium text-gray-900">Don't use UTMs for internal links</p>
+                <p class="text-sm text-gray-600">Only tag links for external traffic. Using UTMs on internal site links
+                    will overwrite the original source data in your analytics.</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Real-World UTM Examples</h2>
+
+    <div class="space-y-4 mb-8">
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900 mb-2">Email newsletter</p>
+            <code class="text-sm text-gray-700 break-all">?utm_source=newsletter&utm_medium=email&utm_campaign=weekly_digest&utm_content=top_story</code>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900 mb-2">Facebook ad</p>
+            <code class="text-sm text-gray-700 break-all">?utm_source=facebook&utm_medium=cpc&utm_campaign=product_launch&utm_content=video_ad</code>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900 mb-2">Twitter bio link</p>
+            <code class="text-sm text-gray-700 break-all">?utm_source=twitter&utm_medium=social&utm_campaign=profile_link</code>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">How TinlyLink Makes UTM Tracking Easier</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        TinlyLink has a built-in UTM builder that lets you add parameters when creating a short link. No more manually
+        editing URLs or using separate spreadsheets. Every UTM-tagged link automatically gets its own analytics
+        dashboard showing clicks, geographic data, devices, and referrers.
+    </p>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        Combined with campaign management tools, you can group related links, compare performance across channels, and
+        make data-driven decisions about where to invest your marketing budget.
+    </p>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Key Takeaways</h2>
+    <ul class="list-disc pl-6 space-y-2 text-gray-600 mb-8">
+        <li>Always use utm_source, utm_medium, and utm_campaign at minimum</li>
+        <li>Keep naming conventions consistent and lowercase</li>
+        <li>Shorten UTM-tagged URLs for cleaner sharing</li>
+        <li>Never use UTM parameters on internal links</li>
+        <li>Use a tool like TinlyLink to build, shorten, and track UTM links in one place</li>
+    </ul>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "public/blog_base.html" %}
+
+{% block article_content %}
+    <p class="text-lg text-gray-600 mb-8 leading-relaxed">
+        Shortening a URL is just the beginning. The real value lies in understanding what happens after someone clicks.
+        Here's a breakdown of the link analytics metrics that matter most and how to use them.
+    </p>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Core Click Metrics</h2>
+
+    <div class="space-y-6 mb-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Total Clicks</h3>
+            <p class="text-gray-600">The raw number of times your link was clicked. This is your top-level engagement
+                metric. While useful as a general indicator, total clicks alone don't tell you much without context.</p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Unique Clicks</h3>
+            <p class="text-gray-600">The number of distinct users who clicked your link. This filters out repeat visits from the same person, giving you a more accurate picture of
+                reach.</p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Click-Through Rate (CTR)</h3>
+            <p class="text-gray-600">The percentage of people who saw your link and clicked it. CTR = (clicks /
+                impressions) x 100. This is particularly useful for email campaigns and social media posts where you
+                know the audience size.</p>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Clicks Over Time</h3>
+            <p class="text-gray-600">A time-series view of when clicks happen. Look for patterns: which days of the week
+                get the most clicks? What time of day? This data helps you optimize posting schedules.</p>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Geographic Data</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        Understanding where your clicks come from is crucial for any business with geographic targeting. Link analytics
+        can reveal click distribution by country, region, and sometimes city.
+    </p>
+    <div class="space-y-3 mb-8">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <p class="text-gray-600"><strong>Country-level data</strong> helps you validate that your ads are reaching
+                the right markets</p>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <p class="text-gray-600"><strong>City-level data</strong> is valuable for local businesses tracking
+                foot-traffic campaigns</p>
+        </div>
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <p class="text-gray-600"><strong>Unexpected geographic clusters</strong> can reveal new markets you haven't
+                considered</p>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Device & Browser Data</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        Knowing whether your audience clicks from mobile or desktop and which browser they use has direct
+        implications for how you design your landing pages.
+    </p>
+    <div class="grid sm:grid-cols-2 gap-4 mb-8">
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900 mb-2">Device Breakdown</p>
+            <ul class="space-y-1 text-sm text-gray-600">
+                <li>Mobile vs Desktop vs Tablet split</li>
+                <li>Operating system (iOS, Android, Windows, macOS)</li>
+                <li>Optimize landing pages for dominant device</li>
+            </ul>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="font-medium text-gray-900 mb-2">Browser Data</p>
+            <ul class="space-y-1 text-sm text-gray-600">
+                <li>Chrome, Safari, Firefox, Edge distribution</li>
+                <li>Identifies compatibility issues</li>
+                <li>Informs testing priorities</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Referrer Tracking</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        Referrer data shows you where people were when they clicked your link. Was it from Twitter, an email client, a
+        specific website, or direct entry? This is essential for understanding which channels drive the most engagement.
+    </p>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        When combined with UTM parameters, referrer data gives you a complete picture of your traffic sources. UTM tags
+        tell you the intended source, while referrer data confirms where the click actually came from.
+    </p>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Turning Data Into Action</h2>
+    <p class="text-gray-600 mb-4 leading-relaxed">
+        Analytics are only valuable if you act on them. Here's a framework for turning link data into decisions:
+    </p>
+    <div class="space-y-4 mb-8">
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                1
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Identify top performers</h3>
+                <p class="text-gray-600">Which links get the most clicks? What do they have in common -- the channel,
+                    the time of day, the copy?</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                2
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Compare across channels</h3>
+                <p class="text-gray-600">Does the same content perform differently on Twitter vs email? Use this to
+                    allocate budget to high-performing channels.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                3
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Optimize timing</h3>
+                <p class="text-gray-600">Use clicks-over-time data to identify peak engagement windows. Schedule your
+                    posts and emails accordingly.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                4
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-900 mb-1">Test and iterate</h3>
+                <p class="text-gray-600">Use utm_content to A/B test link placements, CTAs, and messaging. Let the data
+                    decide what works.</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Analytics Retention: Why It Matters</h2>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        How long your analytics data is stored determines the depth of analysis you can perform. With 30-day retention,
+        you can track individual campaigns. With 1 year retention, you can compare seasonal trends. With lifetime
+        retention, you can see the full story of every link you've ever created.
+    </p>
+    <p class="text-gray-600 mb-6 leading-relaxed">
+        TinlyLink's Free plan includes 30-day analytics, Pro gives you 1 year, and Business provides lifetime retention
+        -- so you never lose historical data.
+    </p>
+
+    <h2 class="text-2xl font-bold text-gray-900 mt-12 mb-4">Key Takeaways</h2>
+    <ul class="list-disc pl-6 space-y-2 text-gray-600 mb-8">
+        <li>Look beyond total clicks unique clicks and CTR tell a more accurate story</li>
+        <li>Geographic and device data should inform your landing page design</li>
+        <li>Combine referrer data with UTM parameters for complete attribution</li>
+        <li>Build a regular habit of reviewing analytics and adjusting strategy</li>
+        <li>Choose a platform with sufficient analytics retention for your needs</li>
+    </ul>
+{% endblock %}

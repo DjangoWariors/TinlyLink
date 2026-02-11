@@ -1,0 +1,252 @@
+{% extends "public_base.html" %}
+
+{% block robots %}index, follow{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Terms of Service - TinlyLink",
+    "description": "Terms of Service for TinlyLink URL shortener and QR code generator.",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://tinlylink.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Terms of Service"}
+        ]
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<section class="pt-28 pb-12 bg-gradient-to-b from-gray-50 to-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl sm:text-4xl font-bold text-secondary mb-3">Terms of Service</h1>
+        <p class="text-gray-500 text-sm">Last updated: February 1, 2025</p>
+    </div>
+</section>
+
+<!-- Content -->
+<section class="pb-20">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="prose prose-gray max-w-none space-y-10 text-gray-600 leading-relaxed">
+
+            <!-- Introduction -->
+            <div>
+                <p>
+                    Welcome to TinlyLink. These Terms of Service ("Terms") govern your access to and use of the TinlyLink
+                    website, services, and applications (collectively, the "Service"). By creating an account or using the
+                    Service, you agree to be bound by these Terms. If you do not agree, please do not use the Service.
+                </p>
+                <p class="mt-3">
+                    TinlyLink provides URL shortening, QR code generation, link analytics, and related tools. These Terms
+                    apply whether you use our free plan or a paid subscription.
+                </p>
+            </div>
+
+            <!-- 1. Account Registration -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">1. Account Registration</h2>
+                <p>To access certain features, you must create an account. When you register, you agree to:</p>
+                <ul class="list-disc pl-6 mt-3 space-y-2">
+                    <li>Provide accurate, current, and complete information during registration.</li>
+                    <li>Keep your password secure and confidential. You are responsible for all activity under your account.</li>
+                    <li>Notify us immediately if you suspect unauthorized access to your account.</li>
+                    <li>Use only one free account per person. Creating multiple free accounts to circumvent plan limits is not permitted.</li>
+                </ul>
+                <p class="mt-3">
+                    You must be at least 16 years old to use TinlyLink. By registering, you confirm that you meet this requirement.
+                </p>
+            </div>
+
+            <!-- 2. Acceptable Use -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">2. Acceptable Use</h2>
+                <p>You may use TinlyLink to shorten URLs, generate QR codes, and track link analytics for lawful purposes. You agree not to use the Service to:</p>
+                <ul class="list-disc pl-6 mt-3 space-y-2">
+                    <li><strong>Distribute malware or phishing content.</strong> Links that redirect to malicious software, fraudulent login pages, or deceptive websites are strictly prohibited.</li>
+                    <li><strong>Send spam.</strong> Do not use shortened links in unsolicited bulk messages, whether by email, SMS, social media, or any other channel.</li>
+                    <li><strong>Host or link to illegal content.</strong> This includes content that violates applicable laws in your jurisdiction, such as child exploitation material, content promoting violence, or illegal goods and services.</li>
+                    <li><strong>Infringe on intellectual property.</strong> Do not shorten links to content that you do not have the right to distribute or that violates someone else's copyright or trademark.</li>
+                    <li><strong>Abuse the platform.</strong> Do not attempt to reverse-engineer, overload, or interfere with the Service's infrastructure. Automated access must go through our documented API and respect rate limits.</li>
+                    <li><strong>Mislead users.</strong> Links should not disguise their true destination in a way that deceives or harms end users.</li>
+                </ul>
+                <p class="mt-3">
+                    We reserve the right to disable any link, QR code, or account that violates these rules, with or without prior notice.
+                </p>
+            </div>
+
+            <!-- 3. Plans and Billing -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">3. Plans and Billing</h2>
+                <p>TinlyLink offers free and paid subscription plans. For paid plans:</p>
+                <ul class="list-disc pl-6 mt-3 space-y-2">
+                    <li><strong>Billing cycle.</strong> Subscriptions are billed monthly. Your card is charged at the start of each billing period.</li>
+                    <li><strong>Plan changes.</strong> You can upgrade or downgrade at any time. Upgrades take effect immediately; downgrades take effect at the end of the current billing period.</li>
+                    <li><strong>Cancellation.</strong> You can cancel your subscription at any time from your account settings. You'll retain access to paid features until the end of your current billing period. After that, your account reverts to the free plan.</li>
+                    <li><strong>Refunds.</strong> We do not offer refunds for partial billing periods. If you believe you were charged in error, contact us and we'll review the situation.</li>
+                    <li><strong>Price changes.</strong> We may adjust pricing with at least 30 days' notice. Continued use after a price change constitutes acceptance of the new pricing.</li>
+                </ul>
+                <p class="mt-3">
+                    Payment processing is handled by Stripe. By subscribing, you also agree to
+                    <a href="https://stripe.com/legal" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary-dark underline">Stripe's Terms of Service</a>.
+                </p>
+            </div>
+
+            <!-- 4. Link and QR Code Ownership -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">4. Link and QR Code Ownership</h2>
+                <p>
+                    You retain ownership of the original URLs you shorten and any content behind them. TinlyLink does not
+                    claim ownership over your links, QR codes, or destination content.
+                </p>
+                <p class="mt-3">
+                    However, by using the Service, you grant TinlyLink a limited license to process, redirect, and cache
+                    your URLs as necessary to operate the Service. This includes storing metadata (such as click counts,
+                    geographic data, and referrer information) associated with your links.
+                </p>
+                <p class="mt-3">
+                    Short links created on our default domain (tinlylink.com) use slugs assigned by our system. While we
+                    make reasonable efforts to keep your links active, we do not guarantee permanent availability of any
+                    specific short URL slug on our shared domain.
+                </p>
+            </div>
+
+            <!-- 5. Custom Domains -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">5. Custom Domains</h2>
+                <p>Paid plans may include the ability to use your own custom domain for short links. When using custom domains:</p>
+                <ul class="list-disc pl-6 mt-3 space-y-2">
+                    <li>You must own or have authorization to use the domain you register.</li>
+                    <li>You are responsible for DNS configuration and domain renewal.</li>
+                    <li>If your subscription lapses, links on your custom domain will stop resolving through TinlyLink.</li>
+                    <li>We may verify domain ownership via DNS TXT records.</li>
+                </ul>
+            </div>
+
+            <!-- 6. API Usage -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">6. API Usage</h2>
+                <p>
+                    TinlyLink provides a REST API for programmatic access. API usage is subject to the rate limits and
+                    quotas defined by your plan. You agree to:
+                </p>
+                <ul class="list-disc pl-6 mt-3 space-y-2">
+                    <li>Keep your API keys confidential. Do not embed them in client-side code or public repositories.</li>
+                    <li>Respect rate limits. Exceeding your plan's limits may result in temporary throttling or suspension of API access.</li>
+                    <li>Not use the API to build a competing URL shortening service.</li>
+                </ul>
+            </div>
+
+            <!-- 7. Analytics and Data -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">7. Analytics and Data</h2>
+                <p>
+                    TinlyLink collects anonymous click analytics when someone visits a shortened link. This includes
+                    information such as geographic location (country/city level), device type, browser, operating system,
+                    and referrer. This data is aggregated and made available to you through your dashboard.
+                </p>
+                <p class="mt-3">
+                    Analytics data retention depends on your plan. Free plan data is retained for 30 days, Pro for 1 year,
+                    and Business plan data is retained indefinitely. When data passes its retention period, it is permanently deleted.
+                </p>
+            </div>
+
+            <!-- 8. Service Availability -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">8. Service Availability</h2>
+                <p>
+                    We strive to keep TinlyLink available and reliable, but we do not guarantee uninterrupted service.
+                    The Service may be temporarily unavailable due to maintenance, updates, or circumstances beyond our control.
+                </p>
+                <p class="mt-3">
+                    We are not liable for any losses resulting from service downtime, including missed clicks or
+                    temporarily inaccessible links.
+                </p>
+            </div>
+
+            <!-- 9. Termination -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">9. Termination</h2>
+                <p>
+                    You may close your account at any time through your account settings. Upon closure, your links will
+                    stop redirecting, your QR codes will become inactive, and your analytics data will be deleted.
+                </p>
+                <p class="mt-3">
+                    We may suspend or terminate your account if you violate these Terms. In cases of serious abuse
+                    (malware, phishing, spam), we may terminate your account immediately without notice.
+                </p>
+                <p class="mt-3">
+                    You can export your data before closing your account. We provide data export functionality in your
+                    account settings.
+                </p>
+            </div>
+
+            <!-- 10. Limitation of Liability -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">10. Limitation of Liability</h2>
+                <p>
+                    To the maximum extent permitted by law, TinlyLink and its team are not liable for any indirect,
+                    incidental, special, consequential, or punitive damages arising from your use of the Service.
+                    This includes, but is not limited to, loss of revenue, data, or business opportunities.
+                </p>
+                <p class="mt-3">
+                    Our total liability for any claim related to the Service is limited to the amount you have paid us
+                    in the 12 months preceding the claim, or $100, whichever is greater.
+                </p>
+            </div>
+
+            <!-- 11. Disclaimer of Warranties -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">11. Disclaimer of Warranties</h2>
+                <p>
+                    The Service is provided "as is" and "as available" without warranties of any kind, whether express
+                    or implied, including but not limited to implied warranties of merchantability, fitness for a
+                    particular purpose, and non-infringement.
+                </p>
+                <p class="mt-3">
+                    We do not warrant that the Service will be error-free, secure, or available at all times, or that
+                    shortened links will always resolve correctly.
+                </p>
+            </div>
+
+            <!-- 12. Changes to These Terms -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">12. Changes to These Terms</h2>
+                <p>
+                    We may update these Terms from time to time. When we make significant changes, we will notify you
+                    by email or by posting a notice on the Service. Continued use of the Service after changes take
+                    effect constitutes your acceptance of the revised Terms.
+                </p>
+                <p class="mt-3">
+                    We encourage you to review these Terms periodically. The "Last updated" date at the top indicates
+                    when the most recent changes were made.
+                </p>
+            </div>
+
+            <!-- 13. Governing Law -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">13. Governing Law</h2>
+                <p>
+                    These Terms are governed by and construed in accordance with applicable law. Any disputes arising
+                    from these Terms or the Service will be resolved through good-faith negotiation first. If a
+                    resolution cannot be reached, disputes will be submitted to binding arbitration.
+                </p>
+            </div>
+
+            <!-- 14. Contact -->
+            <div>
+                <h2 class="text-xl font-semibold text-secondary mb-3">14. Contact</h2>
+                <p>
+                    If you have questions about these Terms, please contact us at
+                    <a href="mailto:legal@tinlylink.com" class="text-primary hover:text-primary-dark underline">legal@tinlylink.com</a>.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

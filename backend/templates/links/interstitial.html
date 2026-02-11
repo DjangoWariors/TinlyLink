@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Redirecting... | TinlyLink</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f9fafb;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #1e3a5f;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .logo span {
+            color: #f6821f;
+        }
+        .timer-badge {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .timer-badge strong {
+            color: #f6821f;
+        }
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .ad-container {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            min-height: 280px;
+            min-width: 336px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ad-placeholder {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        .redirect-info {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .redirect-info h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        .redirect-info p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .destination-url {
+            background: #f3f4f6;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #374151;
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 24px;
+        }
+        .btn {
+            padding: 14px 32px;
+            background: #f6821f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+        .btn:hover {
+            background: #e5731a;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .skip-btn {
+            display: none;
+        }
+        .skip-btn.visible {
+            display: inline-block;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer p {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .footer a {
+            color: #f6821f;
+            text-decoration: none;
+        }
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            margin: 16px auto;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #f6821f;
+            width: 0%;
+            transition: width 1s linear;
+        }
+    </style>
+
+    {% if adsense_client %}
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}"
+         crossorigin="anonymous"></script>
+    {% endif %}
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Tinly<span>Link</span></div>
+        <div class="timer-badge">Redirecting in <strong id="countdown">{{ wait_time }}</strong>s</div>
+    </div>
+    
+    <div class="main">
+        <div class="ad-container">
+            {% if adsense_client and adsense_slot %}
+
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:300px;height:250px"
+                 data-ad-client="{{ adsense_client }}"
+                 data-ad-slot="{{ adsense_slot }}"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+            {% else %}
+            <div class="ad-placeholder">Advertisement</div>
+            {% endif %}
+        </div>
+        
+        <div class="redirect-info">
+            <h2>You're being redirected</h2>
+            <p>Please wait while we prepare your destination</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        
+        <div class="destination-url" title="{{ destination_url }}">
+            {{ destination_url }}
+        </div>
+        
+        <a href="{{ destination_url }}" class="btn skip-btn" id="skipBtn">Continue to Site</a>
+    </div>
+    
+    <div class="footer">
+        <p>Powered by <a href="https://tinlylink.com">TinlyLink</a> • Remove ads with <a href="https://tinlylink.com/pricing">Pro</a></p>
+    </div>
+    
+    <script>
+        const waitTime = {{ wait_time }};
+        const destinationUrl = "{{ destination_url|escapejs }}";
+        let countdown = waitTime;
+        
+        const countdownEl = document.getElementById('countdown');
+        const progressEl = document.getElementById('progress');
+        const skipBtn = document.getElementById('skipBtn');
+        
+
+        progressEl.style.width = '0%';
+        setTimeout(() => {
+            progressEl.style.transition = `width ${waitTime}s linear`;
+            progressEl.style.width = '100%';
+        }, 100);
+        
+
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+
+            if (countdown <= waitTime - 3) {
+                skipBtn.classList.add('visible');
+            }
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = destinationUrl;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
