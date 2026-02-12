@@ -1,35 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir:*)",
-      "Bash(findstr:*)",
-      "Bash(cmd /c dir \"D:\\\\fly_me\\\\update-me\\\\me\" /s /b)",
-      "Bash(tree:*)",
-      "Bash(find:*)",
-      "Bash(python manage.py makemigrations:*)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\activate.bat\")",
-      "Bash(powershell -Command \"\\(Get-Content ''D:\\\\fly_me\\\\update-me\\\\me\\\\frontend\\\\src\\\\pages\\\\Pricing.tsx'' -Raw\\)\")",
-      "Bash(powershell:*)",
-      "Bash(ls -la \"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\templates\\\\public\"\" 2>/dev/null | grep -E \"terms)",
-      "Bash(privacy \")",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
       "Bash(npm run build:*)",
-      "Bash(.venvScriptsactivate)",
-      "Bash(python manage.py check:*)",
-      "Bash(npm run typecheck:*)",
-      "Bash(npm run lint:*)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" manage.py:*)",
-      "Bash(npm install:*)",
-      "Bash(npx tsc:*)",
-      "Bash(grep:*)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" \"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\manage.py\" makemigrations qrcodes)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\":*)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" -c \"\nfrom qrcode.image.styledpil import StyledPilImage\nimport inspect\nsrc = inspect.getsource\\(StyledPilImage.__init__\\)\nprint\\(src[:1000]\\)\n\")",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" -c:*)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\pip.exe\" show qrcode)",
-      "Bash(\"D:\\\\fly_me\\\\update-me\\\\me\\\\backend\\\\venv\\\\Scripts\\\\python.exe\" -c \"\nfrom qrcode.image.styles import colormasks\nprint\\(dir\\(colormasks\\)\\)\n\")",
-      "Bash(python:*)"
+      "Bash(del \"D:\\\\fly_me\\\\update-me\\\\me\\\\frontend\\\\src\\\\components\\\\QRCodeGenerator.tsx\")"
     ]
   }
 }

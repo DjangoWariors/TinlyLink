@@ -20,6 +20,9 @@ HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
 # QR types that require Business plan
 BUSINESS_ONLY_TYPES = {"serial", "product", "menu"}
 
+# QR types that require Pro+ plan
+PRO_PLUS_TYPES = {"upi", "pix", "document", "pdf", "multi_url", "app_store", "social"}
+
 
 def _sanitize_json(obj):
     """Recursively convert Decimal values to int/float for JSON serialization."""
@@ -31,24 +34,9 @@ def _sanitize_json(obj):
         return int(obj) if obj == obj.to_integral_value() else float(obj)
     return obj
 
-# QR types that require Pro+ plan
-PRO_PLUS_TYPES = {"upi", "pix", "document", "pdf", "multi_url", "app_store", "social"}
-
 
 def validate_hex_color(value, required=True):
-    """
-    Validate hex color format and return uppercase value.
-
-    Args:
-        value: The color value to validate
-        required: If False, empty/None values are allowed
-
-    Returns:
-        Uppercase hex color string or original value if not required and empty
-
-    Raises:
-        serializers.ValidationError if invalid format
-    """
+    """Validate hex color format and return uppercase value."""
     if not value:
         if required:
             raise serializers.ValidationError("Color value is required")
@@ -57,6 +45,39 @@ def validate_hex_color(value, required=True):
     if not HEX_COLOR_PATTERN.match(value):
         raise serializers.ValidationError("Invalid color format. Use hex format like #000000")
     return value.upper()
+
+
+class PlanGateMixin:
+    """Shared plan-based feature gating for Create and Update serializers."""
+
+    def gate_styling(self, attrs, plan):
+        """Check styling features against user's plan. Raises FeatureNotAvailable."""
+        if plan == "free":
+            if attrs.get("style") and attrs.get("style") != "square":
+                raise FeatureNotAvailable(detail="Custom QR styles are only available on paid plans.")
+            if attrs.get("foreground_color") and attrs.get("foreground_color") not in ("#000000", None):
+                raise FeatureNotAvailable(detail="Custom colors are only available on paid plans.")
+            if attrs.get("background_color") and attrs.get("background_color") not in ("#FFFFFF", None):
+                raise FeatureNotAvailable(detail="Custom colors are only available on paid plans.")
+            if attrs.get("logo") or attrs.get("logo_url"):
+                raise FeatureNotAvailable(detail="Logo embedding is only available on paid plans.")
+            if attrs.get("frame") and attrs.get("frame") != "none":
+                raise FeatureNotAvailable(detail="QR code frames are only available on paid plans.")
+            if attrs.get("eye_color"):
+                raise FeatureNotAvailable(detail="Custom eye colors are only available on paid plans.")
+            if attrs.get("eye_style") and attrs.get("eye_style") != "square":
+                raise FeatureNotAvailable(detail="Custom eye styles are only available on paid plans.")
+            if attrs.get("frame_text"):
+                raise FeatureNotAvailable(detail="Custom frame text is only available on paid plans.")
+
+        if attrs.get("gradient_enabled"):
+            if plan not in ("business", "enterprise"):
+                raise FeatureNotAvailable(detail="Gradient styling is only available on Business and Enterprise plans.")
+            if not attrs.get("gradient_start") or not attrs.get("gradient_end"):
+                raise serializers.ValidationError({
+                    "gradient_start": "Gradient colors are required when gradient is enabled.",
+                    "gradient_end": "Gradient colors are required when gradient is enabled.",
+                })
 
 
 class QRCodeSerializer(serializers.ModelSerializer):
@@ -131,7 +152,7 @@ class QRCodeSerializer(serializers.ModelSerializer):
         return None
 
 
-class CreateQRCodeSerializer(serializers.Serializer):
+class CreateQRCodeSerializer(PlanGateMixin, serializers.Serializer):
     """Serializer for creating a QR code - supports multiple types."""
 
     # Core fields
@@ -203,52 +224,35 @@ class CreateQRCodeSerializer(serializers.Serializer):
             pass
 
         return value
-    
+
     def validate_foreground_color(self, value):
-        """Validate hex color format."""
         return validate_hex_color(value)
 
     def validate_background_color(self, value):
-        """Validate hex color format."""
         return validate_hex_color(value)
 
     def validate_eye_color(self, value):
-        """Validate hex color format for eye color."""
         return validate_hex_color(value, required=False)
 
     def validate_gradient_start(self, value):
-        """Validate hex color format for gradient start."""
         return validate_hex_color(value, required=False)
 
     def validate_gradient_end(self, value):
-        """Validate hex color format for gradient end."""
         return validate_hex_color(value, required=False)
 
     def validate_logo(self, value):
-        """Validate logo file and check permissions."""
+        """Validate logo file size (plan gating is in validate())."""
         if not value:
             return value
-        
-        request = self.context.get("request")
-        subscription = getattr(request.user, "subscription", None)
-        
-        if not subscription or subscription.plan == "free":
-            raise FeatureNotAvailable(
-                detail="Custom logos are only available on Pro and Business plans."
-            )
-        
-        # Validate file size (max 2MB)
         if value.size > 2 * 1024 * 1024:
             raise serializers.ValidationError("Logo file must be less than 2MB.")
-        
         return value
-    
+
     def validate_content_data(self, value):
-        """Validate content data structure and sanitize Decimal values."""
         if not isinstance(value, dict):
             raise serializers.ValidationError("Content data must be a JSON object")
         return _sanitize_json(value)
-    
+
     def validate(self, attrs):
         """Check usage limits and type-specific requirements."""
         request = self.context.get("request")
@@ -297,61 +301,8 @@ class CreateQRCodeSerializer(serializers.Serializer):
                 detail="Dynamic QR codes are only available on paid plans."
             )
 
-        # Check advanced styling features (Pro+ only)
-        has_custom_style = attrs.get("style") != "square"
-        has_custom_fg_color = attrs.get("foreground_color") != "#000000"
-        has_custom_bg_color = attrs.get("background_color") != "#FFFFFF"
-        has_logo = attrs.get("logo") is not None
-        has_frame = attrs.get("frame") and attrs.get("frame") != "none"
-        has_eye_color = attrs.get("eye_color") and attrs.get("eye_color") not in ("", None)
-
-        if plan == "free":
-            if has_custom_style:
-                raise FeatureNotAvailable(
-                    detail="Custom QR styles are only available on paid plans."
-                )
-            if has_custom_fg_color or has_custom_bg_color:
-                raise FeatureNotAvailable(
-                    detail="Custom colors are only available on paid plans."
-                )
-            if has_logo:
-                raise FeatureNotAvailable(
-                    detail="Logo embedding is only available on paid plans."
-                )
-            if has_frame:
-                raise FeatureNotAvailable(
-                    detail="QR code frames are only available on paid plans."
-                )
-            if has_eye_color:
-                raise FeatureNotAvailable(
-                    detail="Custom eye colors are only available on paid plans."
-                )
-
-        # Enhanced eye styling requires Pro+
-        if attrs.get("eye_style") and attrs.get("eye_style") != "square":
-            if plan == "free":
-                raise FeatureNotAvailable(
-                    detail="Custom eye styles are only available on paid plans."
-                )
-
-        # Gradient styling requires Business+ plan
-        if attrs.get("gradient_enabled"):
-            if plan not in ("business", "enterprise"):
-                raise FeatureNotAvailable(
-                    detail="Gradient styling is only available on Business and Enterprise plans."
-                )
-            # Validate gradient colors are provided
-            if not attrs.get("gradient_start") or not attrs.get("gradient_end"):
-                raise serializers.ValidationError({
-                    "gradient_start": "Gradient colors are required when gradient is enabled.",
-                    "gradient_end": "Gradient colors are required when gradient is enabled."
-                })
-
-        # Frame text requires Pro+
-        if attrs.get("frame_text") and plan == "free":
-            raise FeatureNotAvailable(
-                detail="Custom frame text is only available on paid plans."
-            )
+        # Shared styling plan checks
+        self.gate_styling(attrs, plan)
 
         # Validate content data using schemas for types that have them
         if qr_type in QR_TYPE_SCHEMAS:
@@ -437,7 +388,7 @@ class CreateQRCodeSerializer(serializers.Serializer):
         return qr
 
 
-class UpdateQRCodeSerializer(serializers.Serializer):
+class UpdateQRCodeSerializer(PlanGateMixin, serializers.Serializer):
     """Serializer for updating a QR code."""
 
     title = serializers.CharField(max_length=200, required=False, allow_blank=True)
@@ -467,7 +418,6 @@ class UpdateQRCodeSerializer(serializers.Serializer):
     )
 
     def validate_destination_url(self, value):
-        """Validate destination URL - block private IPs and dangerous schemes."""
         if not value:
             return value
         is_valid, error = Link.validate_url(value)
@@ -476,34 +426,25 @@ class UpdateQRCodeSerializer(serializers.Serializer):
         return value
 
     def validate_foreground_color(self, value):
-        """Validate hex color format."""
         return validate_hex_color(value, required=False)
 
     def validate_background_color(self, value):
-        """Validate hex color format."""
         return validate_hex_color(value, required=False)
 
     def validate_eye_color(self, value):
-        """Validate hex color format for eye color."""
         return validate_hex_color(value, required=False)
 
     def validate_gradient_start(self, value):
-        """Validate hex color format for gradient start."""
         return validate_hex_color(value, required=False)
 
     def validate_gradient_end(self, value):
-        """Validate hex color format for gradient end."""
         return validate_hex_color(value, required=False)
 
     def validate_logo(self, value):
-        """Validate logo file."""
         if not value:
             return value
-
-        # Validate file size (max 2MB)
         if value.size > 2 * 1024 * 1024:
             raise serializers.ValidationError("Logo file must be less than 2MB.")
-
         return value
 
     def validate(self, attrs):
@@ -512,53 +453,8 @@ class UpdateQRCodeSerializer(serializers.Serializer):
         subscription = getattr(request.user, "subscription", None)
         plan = subscription.plan if subscription else "free"
 
-        # Check advanced styling features (Pro+ only)
-        if plan == "free":
-            if attrs.get("style") and attrs.get("style") != "square":
-                raise FeatureNotAvailable(
-                    detail="Custom QR styles are only available on paid plans."
-                )
-            if attrs.get("foreground_color") and attrs.get("foreground_color") != "#000000":
-                raise FeatureNotAvailable(
-                    detail="Custom colors are only available on paid plans."
-                )
-            if attrs.get("background_color") and attrs.get("background_color") != "#FFFFFF":
-                raise FeatureNotAvailable(
-                    detail="Custom colors are only available on paid plans."
-                )
-            if attrs.get("logo"):
-                raise FeatureNotAvailable(
-                    detail="Logo embedding is only available on paid plans."
-                )
-            if attrs.get("frame") and attrs.get("frame") != "none":
-                raise FeatureNotAvailable(
-                    detail="QR code frames are only available on paid plans."
-                )
-            if attrs.get("eye_color"):
-                raise FeatureNotAvailable(
-                    detail="Custom eye colors are only available on paid plans."
-                )
-            if attrs.get("eye_style") and attrs.get("eye_style") != "square":
-                raise FeatureNotAvailable(
-                    detail="Custom eye styles are only available on paid plans."
-                )
-            if attrs.get("frame_text"):
-                raise FeatureNotAvailable(
-                    detail="Custom frame text is only available on paid plans."
-                )
-
-        # Gradient styling requires Business+ plan
-        if attrs.get("gradient_enabled"):
-            if plan not in ("business", "enterprise"):
-                raise FeatureNotAvailable(
-                    detail="Gradient styling is only available on Business and Enterprise plans."
-                )
-
-        # Validate content data using schemas if provided
-        if "content_data" in attrs:
-            # We need the instance to get the qr_type
-            # This will be validated in update() where we have access to instance
-            pass
+        # Shared styling plan checks
+        self.gate_styling(attrs, plan)
 
         return attrs
 

@@ -186,8 +186,12 @@ export function DashboardPage() {
             {format(new Date(), 'EEEE, MMMM d, yyyy')} &mdash; Here's your link performance overview.
           </p>
         </div>
-        <Link to="/dashboard/links/new">
-          <Button leftIcon={<Plus className="w-4 h-4" />}>Create Link</Button>
+        <Link
+          to="/dashboard/links/new"
+          className="inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary text-white hover:bg-primary-dark focus:ring-primary px-5 py-2.5 text-sm gap-2"
+        >
+          <span className="inline-flex"><Plus className="w-4 h-4" /></span>
+          Create Link
         </Link>
       </div>
 
@@ -294,9 +298,8 @@ export function DashboardPage() {
                 <button
                   key={p.value}
                   onClick={() => setPeriod(p.value)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    period === p.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                  }`}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${period === p.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    }`}
                 >
                   {p.label}
                 </button>
@@ -360,12 +363,11 @@ export function DashboardPage() {
               <div className="space-y-1 max-h-56 overflow-y-auto">
                 {activityFeed.map((item) => (
                   <div key={item.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      item.type === 'click' ? 'bg-primary/10 text-primary' :
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${item.type === 'click' ? 'bg-primary/10 text-primary' :
                       item.type === 'link_created' ? 'bg-success/10 text-success' :
-                      item.type === 'qr_scan' ? 'bg-accent/10 text-accent' :
-                      'bg-warning/10 text-warning'
-                    }`}>
+                        item.type === 'qr_scan' ? 'bg-accent/10 text-accent' :
+                          'bg-warning/10 text-warning'
+                      }`}>
                       {item.type === 'click' && <MousePointer className="w-3 h-3" />}
                       {item.type === 'link_created' && <Link2 className="w-3 h-3" />}
                       {item.type === 'qr_scan' && <QrCode className="w-3 h-3" />}
@@ -406,12 +408,11 @@ export function DashboardPage() {
                     to={`/dashboard/links/${link.id}`}
                     className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
                   >
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                      index === 0 ? 'bg-amber-100 text-amber-700' :
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${index === 0 ? 'bg-amber-100 text-amber-700' :
                       index === 1 ? 'bg-gray-200 text-gray-600' :
-                      index === 2 ? 'bg-orange-100 text-orange-600' :
-                      'bg-gray-100 text-gray-400'
-                    }`}>
+                        index === 2 ? 'bg-orange-100 text-orange-600' :
+                          'bg-gray-100 text-gray-400'
+                      }`}>
                       {index + 1}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -584,7 +585,14 @@ export function DashboardPage() {
                 icon={<Link2 className="w-6 h-6" />}
                 title="No links yet"
                 description="Create your first short link"
-                action={<Link to="/dashboard/links/new"><Button size="sm">Create Link</Button></Link>}
+                action={
+                  <Link
+                    to="/dashboard/links/new"
+                    className="inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-primary text-white hover:bg-primary-dark focus:ring-primary px-4 py-2 text-xs gap-1.5"
+                  >
+                    Create Link
+                  </Link>
+                }
               />
             ) : (
               <div className="space-y-2">
@@ -670,10 +678,11 @@ export function DashboardPage() {
             </div>
 
             {subscription?.plan === 'free' && (
-              <Link to="/dashboard/settings?tab=billing">
-                <Button variant="outline" className="w-full mt-2">
-                  Upgrade for more <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+              <Link
+                to="/dashboard/settings?tab=billing"
+                className="inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary px-5 py-2.5 text-sm gap-2 w-full mt-2"
+              >
+                Upgrade for more <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             )}
           </div>
@@ -693,10 +702,11 @@ export function DashboardPage() {
                 <p className="text-sm text-white/90 mt-1">Get {PLAN_LIMITS.pro.linksPerMonth.toLocaleString()} links/mo, custom domains, and full analytics retention.</p>
               </div>
             </div>
-            <Link to="/dashboard/settings?tab=billing">
-              <Button size="sm" className="bg-white text-orange-600 hover:bg-white/90 border-0 font-semibold shadow-md">
-                Upgrade Now <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
+            <Link
+              to="/dashboard/settings?tab=billing"
+              className="inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-xs gap-1.5 bg-white text-orange-600 hover:bg-white/90 border-0 shadow-md"
+            >
+              Upgrade Now <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
         </Card>

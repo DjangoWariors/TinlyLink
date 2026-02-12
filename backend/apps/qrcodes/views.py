@@ -256,32 +256,17 @@ class QRCodePreviewView(APIView):
 
     @extend_schema(tags=["QR Codes"])
     def post(self, request):
+        import base64
         from apps.links.models import Link
+        from .rendering import render_png
 
         # Get parameters
         link_id = request.data.get("link_id")
         qr_type = request.data.get("qr_type", "link")
         content_data = request.data.get("content_data", {})
 
-        # Basic styling
-        style = request.data.get("style", "square")
-        frame = request.data.get("frame", "none")
-        frame_text = request.data.get("frame_text", "")
-        foreground_color = request.data.get("foreground_color", "#000000")
-        background_color = request.data.get("background_color", "#FFFFFF")
-
-        # Enhanced styling
-        eye_style = request.data.get("eye_style", "square")
-        eye_color = request.data.get("eye_color", "")
-
-        # Gradient styling
-        gradient_enabled = request.data.get("gradient_enabled", False)
-        gradient_start = request.data.get("gradient_start", "")
-        gradient_end = request.data.get("gradient_end", "")
-        gradient_direction = request.data.get("gradient_direction", "vertical")
-
-        link = None
-        # Verify link exists for link type
+        # Determine content string for preview
+        content = "https://example.com"
         if qr_type == "link" and link_id:
             team = getattr(request, "team", None)
             link_filter = {"id": link_id}
@@ -292,31 +277,40 @@ class QRCodePreviewView(APIView):
                 link_filter["team__isnull"] = True
             try:
                 link = Link.objects.get(**link_filter)
+                content = link.short_url
             except Link.DoesNotExist:
                 return Response({"error": "Link not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif qr_type == "text":
+            content = content_data.get("text", "Preview")
+        elif qr_type == "phone":
+            content = f"tel:{content_data.get('phone', '+1234567890')}"
+        else:
+            # For types with schemas, try to encode
+            try:
+                from .content import encode_content
+                encoded = encode_content(qr_type, content_data)
+                if encoded:
+                    content = encoded
+            except Exception:
+                pass  # fall back to default
 
-        # Create temporary QR for preview
-        temp_qr = QRCode(
-            qr_type=qr_type,
-            link=link,
-            user=request.user,
-            content_data=content_data,
-            style=style,
-            frame=frame,
-            frame_text=frame_text,
-            foreground_color=foreground_color,
-            background_color=background_color,
-            eye_style=eye_style,
-            eye_color=eye_color,
-            gradient_enabled=gradient_enabled,
-            gradient_start=gradient_start,
-            gradient_end=gradient_end,
-            gradient_direction=gradient_direction,
+        # Generate preview PNG directly from renderer (no temp model needed)
+        png_bytes = render_png(
+            content=content,
+            size=300,
+            style=request.data.get("style", "square"),
+            frame=request.data.get("frame", "none"),
+            frame_text=request.data.get("frame_text", ""),
+            fg_color=request.data.get("foreground_color", "#000000"),
+            bg_color=request.data.get("background_color", "#FFFFFF"),
+            eye_style=request.data.get("eye_style", "square"),
+            eye_color=request.data.get("eye_color", ""),
+            logo_url="",  # skip logo for preview speed
+            gradient_enabled=request.data.get("gradient_enabled", False),
+            gradient_start=request.data.get("gradient_start", ""),
+            gradient_end=request.data.get("gradient_end", ""),
+            gradient_direction=request.data.get("gradient_direction", "vertical"),
         )
-
-        # Generate preview PNG
-        import base64
-        png_bytes = temp_qr.generate_png(size=300)
         base64_image = base64.b64encode(png_bytes).decode()
 
         return Response({
@@ -740,21 +734,17 @@ class SerialBatchStatsView(APIView):
             if scan["date"]:
                 scan["date"] = scan["date"].strftime("%Y-%m-%d")
 
-        # Top countries (from first_scan_location which stores JSON with country)
-        top_countries = []
-        country_counts = {}
-        for code in codes.exclude(first_scan_location="").values_list("first_scan_location", flat=True):
-            try:
-                import json
-                location = json.loads(code) if isinstance(code, str) else code
-                country = location.get("country", "Unknown") if isinstance(location, dict) else "Unknown"
-            except (json.JSONDecodeError, TypeError):
-                country = code.split(",")[-1].strip() if code else "Unknown"
-            country_counts[country] = country_counts.get(country, 0) + 1
-
+        # Top countries using DB aggregation on first_scan_country
+        top_countries = list(
+            codes.exclude(first_scan_country="")
+            .values("first_scan_country")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+            .values("first_scan_country", "count")
+        )
         top_countries = [
-            {"country": k, "count": v}
-            for k, v in sorted(country_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+            {"country": row["first_scan_country"], "count": row["count"]}
+            for row in top_countries
         ]
 
         # Suspicious scans

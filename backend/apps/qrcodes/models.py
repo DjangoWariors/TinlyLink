@@ -5,10 +5,18 @@ QR Code models for TinlyLink.
 import uuid
 import io
 from pathlib import Path
+from urllib.parse import quote
 
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+
+# Fields whose change should trigger QR image regeneration
+_DESIGN_FIELDS = (
+    "style", "frame", "frame_text", "foreground_color", "background_color",
+    "logo_url", "eye_style", "eye_color", "gradient_enabled", "gradient_start",
+    "gradient_end", "gradient_direction", "content_data", "qr_type",
+)
 
 
 
@@ -159,58 +167,51 @@ class QRCode(models.Model):
     class Meta:
         db_table = "qr_codes"
         ordering = ["-created_at"]
-    
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        """Snapshot design fields on load so _design_changed() needs no extra query."""
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_design = {
+            f: getattr(instance, f) for f in _DESIGN_FIELDS if f in field_names
+        }
+        return instance
+
     def __str__(self):
         if self.title:
             return f"QR: {self.title}"
         if self.qr_type == "link" and self.link:
             return f"QR: {self.link.short_code}"
         return f"QR: {self.get_qr_type_display()}"
-    
+
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         update_fields = kwargs.get('update_fields')
-        
-        # Check design changed BEFORE saving (so we compare against DB values)
+
+        # Check design changed BEFORE saving (compare against snapshot from from_db)
         design_changed = not is_new and not update_fields and self._design_changed()
-        
+
         # Generate short_code for dynamic QRs
         if self.is_dynamic and not self.short_code:
             from apps.links.models import generate_short_code
             self.short_code = generate_short_code(8)
-        
+
         super().save(*args, **kwargs)
-        
+
         # Generate QR code images on create or design change
         # Skip if update_fields is specified (called from task to save paths)
         if not update_fields and (is_new or design_changed):
             from .tasks import generate_qr_images
             generate_qr_images.delay(str(self.id))
-    
+
     def _design_changed(self):
-        """Check if design settings have changed compared to database."""
-        if not self.pk:
+        """Check if design settings have changed compared to loaded snapshot."""
+        loaded = getattr(self, "_loaded_design", None)
+        if loaded is None:
             return False
-        try:
-            old = QRCode.objects.get(pk=self.pk)
-            return (
-                old.style != self.style or
-                old.frame != self.frame or
-                old.frame_text != self.frame_text or
-                old.foreground_color != self.foreground_color or
-                old.background_color != self.background_color or
-                old.logo_url != self.logo_url or
-                old.eye_style != self.eye_style or
-                old.eye_color != self.eye_color or
-                old.gradient_enabled != self.gradient_enabled or
-                old.gradient_start != self.gradient_start or
-                old.gradient_end != self.gradient_end or
-                old.gradient_direction != self.gradient_direction or
-                old.content_data != self.content_data or
-                old.qr_type != self.qr_type
-            )
-        except QRCode.DoesNotExist:
-            return False
+        return any(
+            loaded.get(f) != getattr(self, f) for f in _DESIGN_FIELDS
+        )
     
     @property
     def short_url(self):
@@ -232,85 +233,35 @@ class QRCode(models.Model):
     def get_qr_content(self):
         """Generate the actual content string for the QR code based on type."""
         data = self.content_data or {}
-        
+
         if self.qr_type == "link":
             return self.link.short_url if self.link else data.get("url", "")
-        
+
         elif self.qr_type == "vcard":
-            # Generate vCard 3.0 format
-            lines = ["BEGIN:VCARD", "VERSION:3.0"]
-            if data.get("name"):
-                lines.append(f"FN:{data['name']}")
-                # Parse first/last name
-                parts = data['name'].split(' ', 1)
-                if len(parts) == 2:
-                    lines.append(f"N:{parts[1]};{parts[0]};;;")
-            if data.get("organization"):
-                lines.append(f"ORG:{data['organization']}")
-            if data.get("title"):
-                lines.append(f"TITLE:{data['title']}")
-            if data.get("phone"):
-                lines.append(f"TEL;TYPE=CELL:{data['phone']}")
-            if data.get("email"):
-                lines.append(f"EMAIL:{data['email']}")
-            if data.get("website"):
-                lines.append(f"URL:{data['website']}")
-            if data.get("address"):
-                lines.append(f"ADR:;;{data['address']};;;;")
-            lines.append("END:VCARD")
-            return "\n".join(lines)
-        
+            return self._content_vcard(data)
+
         elif self.qr_type == "wifi":
-            # WiFi network format: WIFI:T:WPA;S:network;P:password;;
-            auth = data.get("auth", "WPA")
-            ssid = data.get("ssid", "")
-            password = data.get("password", "")
-            hidden = "true" if data.get("hidden") else "false"
-            return f"WIFI:T:{auth};S:{ssid};P:{password};H:{hidden};;"
-        
+            return self._content_wifi(data)
+
         elif self.qr_type == "email":
-            email = data.get("email", "")
-            subject = data.get("subject", "")
-            body = data.get("body", "")
-            mailto = f"mailto:{email}"
-            params = []
-            if subject:
-                params.append(f"subject={subject}")
-            if body:
-                params.append(f"body={body}")
-            if params:
-                mailto += "?" + "&".join(params)
-            return mailto
-        
+            return self._content_email(data)
+
         elif self.qr_type == "sms":
             phone = data.get("phone", "")
             message = data.get("message", "")
             if message:
                 return f"SMSTO:{phone}:{message}"
             return f"SMSTO:{phone}"
-        
+
         elif self.qr_type == "phone":
             return f"tel:{data.get('phone', '')}"
-        
+
         elif self.qr_type == "text":
             return data.get("text", "")
-        
+
         elif self.qr_type == "calendar":
-            # Generate iCalendar VEVENT format
-            lines = ["BEGIN:VEVENT"]
-            if data.get("title"):
-                lines.append(f"SUMMARY:{data['title']}")
-            if data.get("start"):
-                lines.append(f"DTSTART:{data['start']}")
-            if data.get("end"):
-                lines.append(f"DTEND:{data['end']}")
-            if data.get("location"):
-                lines.append(f"LOCATION:{data['location']}")
-            if data.get("description"):
-                lines.append(f"DESCRIPTION:{data['description']}")
-            lines.append("END:VEVENT")
-            return "\n".join(lines)
-        
+            return self._content_calendar(data)
+
         elif self.qr_type == "location":
             lat = data.get("latitude", 0)
             lng = data.get("longitude", 0)
@@ -321,12 +272,11 @@ class QRCode(models.Model):
 
         # Payment types
         elif self.qr_type == "upi":
-            # UPI payment format: upi://pay?pa=...&pn=...&am=...
-            pa = data.get("pa", "")  # Payee VPA
-            pn = data.get("pn", "")  # Payee name
-            am = data.get("am", "")  # Amount
-            cu = data.get("cu", "INR")  # Currency
-            tn = data.get("tn", "")  # Transaction note
+            pa = data.get("pa", "")
+            pn = data.get("pn", "")
+            am = data.get("am", "")
+            cu = data.get("cu", "INR")
+            tn = data.get("tn", "")
             params = [f"pa={pa}", f"pn={pn}"]
             if am:
                 params.append(f"am={am}")
@@ -336,147 +286,236 @@ class QRCode(models.Model):
             return f"upi://pay?{'&'.join(params)}"
 
         elif self.qr_type == "pix":
-            # Pix payment - simplified EMV format
-            # In production, use proper EMV QR code generation
-            key = data.get("key", "")
-            name = data.get("name", "")
-            city = data.get("city", "")
-            # Simplified - actual implementation needs proper EMV encoding
-            return f"pix:{key}"
+            return self._content_pix(data)
 
         # Product/Business types - these use dynamic redirect URLs
         elif self.qr_type in ("product", "menu", "document", "pdf"):
-            # These types use dynamic QR with landing page
             if self.is_dynamic and self.short_code:
                 return f"{settings.DEFAULT_SHORT_DOMAIN}/q/{self.short_code}"
             return data.get("url", self.destination_url or "")
 
         # Multi-destination types - use dynamic redirect with landing page
-        elif self.qr_type == "multi_url":
-            # Multi-URL QRs redirect to a link tree page
-            if self.is_dynamic and self.short_code:
-                return f"{settings.DEFAULT_SHORT_DOMAIN}/q/{self.short_code}"
-            return data.get("fallback_url", "")
-
-        elif self.qr_type == "app_store":
-            # App store smart links - redirect detects device and redirects
-            if self.is_dynamic and self.short_code:
-                return f"{settings.DEFAULT_SHORT_DOMAIN}/q/{self.short_code}"
-            return data.get("fallback_url", "")
-
-        elif self.qr_type == "social":
-            # Social media hub - link tree style page
+        elif self.qr_type in ("multi_url", "app_store", "social"):
             if self.is_dynamic and self.short_code:
                 return f"{settings.DEFAULT_SHORT_DOMAIN}/q/{self.short_code}"
             return data.get("fallback_url", "")
 
         # Enterprise types
         elif self.qr_type == "serial":
-            # Serialized QR - uses verification URL
             if self.is_dynamic and self.short_code:
                 return f"{settings.DEFAULT_SHORT_DOMAIN}/verify/{self.short_code}"
             serial_number = data.get("serial_number", "")
             return f"{settings.DEFAULT_SHORT_DOMAIN}/verify/{serial_number}"
 
         return ""
+
+    # ------------------------------------------------------------------
+    # Content helpers with proper escaping / standards compliance
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _vcard_escape(value):
+        """Escape special characters for vCard 3.0 (RFC 6350 §3.4)."""
+        if not value:
+            return value
+        # Backslash must be escaped first
+        value = value.replace("\\", "\\\\")
+        value = value.replace(",", "\\,")
+        value = value.replace(";", "\\;")
+        value = value.replace("\n", "\\n")
+        return value
+
+    def _content_vcard(self, data):
+        """Generate vCard 3.0 with proper escaping."""
+        esc = self._vcard_escape
+        lines = ["BEGIN:VCARD", "VERSION:3.0"]
+        if data.get("name"):
+            lines.append(f"FN:{esc(data['name'])}")
+            parts = data['name'].split(' ', 1)
+            last = esc(parts[1]) if len(parts) == 2 else ""
+            first = esc(parts[0])
+            lines.append(f"N:{last};{first};;;")
+        if data.get("organization"):
+            lines.append(f"ORG:{esc(data['organization'])}")
+        if data.get("title"):
+            lines.append(f"TITLE:{esc(data['title'])}")
+        if data.get("phone"):
+            lines.append(f"TEL;TYPE=CELL:{data['phone']}")
+        if data.get("email"):
+            lines.append(f"EMAIL:{data['email']}")
+        if data.get("website"):
+            lines.append(f"URL:{data['website']}")
+        if data.get("address"):
+            lines.append(f"ADR:;;{esc(data['address'])};;;;")
+        lines.append("END:VCARD")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _wifi_escape(value):
+        """Escape special characters for WiFi QR format."""
+        if not value:
+            return value
+        for ch in ('\\', ';', ',', '"', ':'):
+            value = value.replace(ch, f"\\{ch}")
+        return value
+
+    def _content_wifi(self, data):
+        """Generate WiFi QR string with proper escaping."""
+        auth = data.get("auth", "WPA")
+        ssid = self._wifi_escape(data.get("ssid", ""))
+        password = self._wifi_escape(data.get("password", ""))
+        hidden = "true" if data.get("hidden") else "false"
+        return f"WIFI:T:{auth};S:{ssid};P:{password};H:{hidden};;"
+
+    @staticmethod
+    def _content_email(data):
+        """Generate mailto: URI with URL-encoded subject and body."""
+        email = data.get("email", "")
+        subject = data.get("subject", "")
+        body = data.get("body", "")
+        mailto = f"mailto:{email}"
+        params = []
+        if subject:
+            params.append(f"subject={quote(subject, safe='')}")
+        if body:
+            params.append(f"body={quote(body, safe='')}")
+        if params:
+            mailto += "?" + "&".join(params)
+        return mailto
+
+    @staticmethod
+    def _ical_dt(value):
+        """Format a datetime value as iCalendar datetime (YYYYMMDDTHHMMSSZ).
+
+        Accepts ISO-format strings or datetime objects.
+        """
+        from datetime import datetime as _dt
+        if isinstance(value, str):
+            # Strip trailing Z, parse, treat as UTC
+            clean = value.rstrip("Z").replace("+00:00", "")
+            try:
+                dt = _dt.fromisoformat(clean)
+            except (ValueError, TypeError):
+                return value  # fallback: pass through
+        else:
+            dt = value
+        return dt.strftime("%Y%m%dT%H%M%SZ")
+
+    def _content_calendar(self, data):
+        """Generate iCalendar event with proper VCALENDAR wrapper (RFC 5545)."""
+        lines = [
+            "BEGIN:VCALENDAR",
+            "VERSION:2.0",
+            "PRODID:-//TinlyLink//QR//EN",
+            "BEGIN:VEVENT",
+        ]
+        if data.get("title"):
+            lines.append(f"SUMMARY:{data['title']}")
+        if data.get("start"):
+            lines.append(f"DTSTART:{self._ical_dt(data['start'])}")
+        if data.get("end"):
+            lines.append(f"DTEND:{self._ical_dt(data['end'])}")
+        if data.get("location"):
+            lines.append(f"LOCATION:{data['location']}")
+        if data.get("description"):
+            lines.append(f"DESCRIPTION:{data['description']}")
+        lines.append("END:VEVENT")
+        lines.append("END:VCALENDAR")
+        return "\r\n".join(lines)
+
+    # ------------------------------------------------------------------
+    # Pix EMV QR Code (BCB / EMV 6.3)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _emv_tlv(tag, value):
+        """Build a single EMV TLV field: tag (2 chars) + length (2 chars) + value."""
+        return f"{tag}{len(value):02d}{value}"
+
+    @staticmethod
+    def _crc16_ccitt(payload):
+        """CRC16-CCITT (0xFFFF) checksum used in EMV QR codes."""
+        crc = 0xFFFF
+        for byte in payload.encode("ascii"):
+            crc ^= byte << 8
+            for _ in range(8):
+                if crc & 0x8000:
+                    crc = (crc << 1) ^ 0x1021
+                else:
+                    crc <<= 1
+                crc &= 0xFFFF
+        return f"{crc:04X}"
+
+    def _content_pix(self, data):
+        """Build a compliant Pix EMV QR Code payload (BR Code / EMV 6.3).
+
+        Reference: BCB Pix Manual, EMV QRCPS-MPM specification.
+        """
+        key = data.get("key", "")
+        name = data.get("name", "")[:25]  # BCB max 25 chars
+        city = data.get("city", "")[:15]  # BCB max 15 chars
+        amount = data.get("amount")
+        txid = data.get("txid", "***")
+
+        # Merchant Account Information (tag 26)
+        gui = self._emv_tlv("00", "br.gov.bcb.pix")
+        mai_key = self._emv_tlv("01", key)
+        mai = self._emv_tlv("26", gui + mai_key)
+
+        payload = ""
+        payload += self._emv_tlv("00", "01")           # Payload Format Indicator
+        payload += mai                                   # Merchant Account Info
+        payload += self._emv_tlv("52", "0000")          # Merchant Category Code
+        payload += self._emv_tlv("53", "986")           # Transaction Currency (BRL)
+        if amount:
+            payload += self._emv_tlv("54", f"{float(amount):.2f}")
+        payload += self._emv_tlv("58", "BR")            # Country Code
+        payload += self._emv_tlv("59", name)            # Merchant Name
+        payload += self._emv_tlv("60", city)            # Merchant City
+
+        # Additional Data (tag 62) with txid (tag 05)
+        add_data = self._emv_tlv("05", txid)
+        payload += self._emv_tlv("62", add_data)
+
+        # CRC placeholder then compute
+        payload += "6304"
+        crc = self._crc16_ccitt(payload)
+        payload += crc
+
+        return payload
     
+    def _render_kwargs(self):
+        """Collect rendering parameters from model fields."""
+        return {
+            "content": self.short_url,
+            "style": self.style,
+            "frame": self.frame,
+            "frame_text": self.frame_text,
+            "fg_color": self.foreground_color,
+            "bg_color": self.background_color,
+            "eye_style": self.eye_style,
+            "eye_color": self.eye_color or "",
+            "logo_url": self.logo_url,
+            "gradient_enabled": self.gradient_enabled,
+            "gradient_start": self.gradient_start,
+            "gradient_end": self.gradient_end,
+            "gradient_direction": self.gradient_direction,
+        }
+
     def generate_png(self, size=400):
-        """
-        Generate PNG QR code image with full styling support.
-        Returns bytes.
-        """
-        from .image_generator import qr_generator
+        """Generate PNG QR code image. Returns bytes."""
+        from .rendering import render_png
+        return render_png(size=size, **self._render_kwargs())
 
-        img = qr_generator.generate(
-            content=self.short_url,
-            size=size,
-            style=self.style,
-            frame=self.frame,
-            frame_text=self.frame_text,
-            fg_color=self.foreground_color,
-            bg_color=self.background_color,
-            eye_style=self.eye_style,
-            eye_color=self.eye_color or "",
-            logo_url=self.logo_url,
-            gradient_enabled=self.gradient_enabled,
-            gradient_start=self.gradient_start,
-            gradient_end=self.gradient_end,
-            gradient_direction=self.gradient_direction,
-        )
-
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG", quality=95)
-        buffer.seek(0)
-        return buffer.getvalue()
-    
     def generate_svg(self):
-        """
-        Generate SVG QR code.
-        Returns SVG string.
-        """
-        import qrcode
-        import qrcode.image.svg
-        
-        # Create QR code
-        qr = qrcode.QRCode(
-            version=None,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=10,
-            border=2,
-        )
-        qr.add_data(self.short_url)
-        qr.make(fit=True)
-        
-        # Generate SVG
-        factory = qrcode.image.svg.SvgPathImage
-        img = qr.make_image(
-            image_factory=factory,
-            fill_color=self.foreground_color,
-            back_color=self.background_color,
-        )
-        
-        # Get SVG bytes
-        buffer = io.BytesIO()
-        img.save(buffer)
-        buffer.seek(0)
-        return buffer.getvalue().decode("utf-8")
-    
+        """Generate SVG QR code. Returns SVG string."""
+        from .rendering import render_svg
+        return render_svg(**self._render_kwargs())
+
     def generate_pdf(self):
-        """
-        Generate PDF with QR code.
-        Returns PDF bytes.
-        """
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.units import mm
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.utils import ImageReader
-        
-        # Generate PNG first
-        png_bytes = self.generate_png(size=800)
-        
-        # Create PDF
-        buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=A4)
-        
-        # Center QR code on page
-        width, height = A4
-        qr_size = 150 * mm
-        x = (width - qr_size) / 2
-        y = (height - qr_size) / 2
-        
-        # Draw QR code
-        img = ImageReader(io.BytesIO(png_bytes))
-        c.drawImage(img, x, y, width=qr_size, height=qr_size)
-        
-        # Add URL below
-        c.setFont("Helvetica", 12)
-        c.drawCentredString(width / 2, y - 20, self.short_url)
-        
-        c.showPage()
-        c.save()
-        
-        buffer.seek(0)
-        return buffer.getvalue()
+        """Generate PDF with QR code. Returns PDF bytes."""
+        from .rendering import render_pdf
+        return render_pdf(**self._render_kwargs())
     
     @staticmethod
     def _validate_logo_url(url):

@@ -3,7 +3,7 @@ import { ExternalLink, Globe, Lock, Calendar, Copy, QrCode, Check } from 'lucide
 import { Card } from './Card';
 import { Badge } from './index';
 import { Button } from './Button';
-import { QRCodeGenerator } from '../QRCodeGenerator';
+import { QRFramedRenderer } from '../qr';
 import toast from 'react-hot-toast';
 
 interface LinkPreviewProps {
@@ -136,7 +136,7 @@ export function LinkPreview({
             </button>
             {showQR && (
               <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 flex justify-center">
-                <QRCodeGenerator value={shortUrl} size={120} />
+                <QRFramedRenderer value={shortUrl} size={120} />
               </div>
             )}
           </div>

@@ -18,7 +18,7 @@ import { linksAPI, campaignsAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 import type { Campaign, CustomDomain, QRFrame, QRStyle } from '@/types';
-import { QRCodeGenerator } from '@/components/QRCodeGenerator';
+import { QRFramedRenderer } from '@/components/qr';
 
 const FRAME_OPTIONS = [
   { id: 'none', label: 'None', icon: QrCode },
@@ -574,7 +574,7 @@ export function CreateLinkPage() {
 
                         {/* Small Preview */}
                         <div className="flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <QRCodeGenerator
+                          <QRFramedRenderer
                             value={watch('original_url') || 'https://tinlylink.com'}
                             size={120}
                             style={watch('qr_style') as QRStyle || 'square'}
