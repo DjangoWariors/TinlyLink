@@ -37,6 +37,35 @@ class PricingView(SEOViewMixin, TemplateView):
     page_title = "Pricing - TinlyLink"
     page_description = "Flexible pricing plans for everyone. From free personal use to enterprise-grade link management solutions."
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from apps.billing.models import Plan
+
+        cached = cache.get("pricing_page_plans")
+        if cached is None:
+            plans = list(
+                Plan.objects.filter(is_enabled=True)
+                .order_by("sort_order", "monthly_price")
+                .values(
+                    "slug", "name", "description", "is_coming_soon", "is_popular",
+                    "badge_text", "cta_text", "features_json", "monthly_price",
+                    "yearly_price",
+                    "links_per_month", "qr_codes_per_month", "api_calls_per_month",
+                    "custom_domains", "analytics_retention_days", "team_members",
+                    "custom_slugs", "password_protection", "priority_support", "sso",
+                )
+            )
+            # Pre-compute display prices for the template
+            for p in plans:
+                p["monthly_display"] = p["monthly_price"] / 100
+                p["yearly_display"] = p["yearly_price"] / 100
+                p["yearly_monthly_display"] = round(p["yearly_price"] / 100 / 12, 2) if p["yearly_price"] else 0
+            cached = plans
+            cache.set("pricing_page_plans", cached, timeout=300)
+
+        context["plans"] = cached
+        return context
+
 
 class FeaturesView(SEOViewMixin, TemplateView):
     template_name = "public/features.html"

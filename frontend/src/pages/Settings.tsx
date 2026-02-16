@@ -15,7 +15,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/commo
 import { Badge, Modal, ProgressBar, Loading } from '@/components/common';
 import { accountAPI, billingAPI, downloadBlob, getErrorMessage } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { PLAN_LIMITS, PLAN_PRICING } from '@/config';
+import { usePlans } from '@/hooks/usePlans';
 import toast from 'react-hot-toast';
 
 type Tab = 'profile' | 'security' | 'billing' | 'notifications' | 'data' | 'integrations';
@@ -31,6 +31,7 @@ interface NotificationSettings {
 export function SettingsPage() {
   const queryClient = useQueryClient();
   const { user, subscription, refreshUser, logout } = useAuth();
+  const { plans: allPlans } = usePlans();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Read tab from URL or default to 'profile'
@@ -215,9 +216,9 @@ export function SettingsPage() {
     changePasswordMutation.mutate({ current_password: data.current_password, new_password: data.new_password });
   };
 
-  const handleUpgrade = async (plan: 'pro' | 'business' | 'enterprise') => {
+  const handleUpgrade = async (planSlug: string) => {
     try {
-      const { checkout_url } = await billingAPI.createCheckoutSession(plan);
+      const { checkout_url } = await billingAPI.createCheckoutSession(planSlug as 'pro' | 'business' | 'enterprise');
       window.location.href = checkout_url;
     } catch (err) { toast.error(getErrorMessage(err), { id: 'checkout' }); }
   };
@@ -490,60 +491,34 @@ export function SettingsPage() {
                 </div>
               </Card>
               <div className="grid md:grid-cols-3 gap-4">
-                <Card className={subscription?.plan === 'pro' ? 'border-primary' : ''}>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Pro</h3>
-                      {subscription?.plan === 'pro' && <Badge variant="primary">Current</Badge>}
-                    </div>
-                    <div><span className="text-3xl font-bold">${PLAN_PRICING.pro.monthly}</span><span className="text-gray-500">/month</span></div>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.pro.linksPerMonth.toLocaleString()} links/month</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.pro.qrCodesPerMonth.toLocaleString()} QR codes/month</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> 1-year analytics</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Custom slugs</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.pro.customDomains} custom domain</li>
-                    </ul>
-                    {subscription?.plan !== 'pro' && <Button className="w-full" onClick={() => handleUpgrade('pro')}>Upgrade to Pro</Button>}
-                  </div>
-                </Card>
-                <Card className={subscription?.plan === 'business' ? 'border-primary' : ''}>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Business</h3>
-                      {subscription?.plan === 'business' && <Badge variant="primary">Current</Badge>}
-                    </div>
-                    <div><span className="text-3xl font-bold">${PLAN_PRICING.business.monthly}</span><span className="text-gray-500">/month</span></div>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.business.linksPerMonth.toLocaleString()} links/month</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.business.qrCodesPerMonth.toLocaleString()} QR codes/month</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> 2-year analytics</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.business.customDomains} custom domains</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Up to {PLAN_LIMITS.business.teamMembers} team members</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Priority support</li>
-                    </ul>
-                    {subscription?.plan !== 'business' && <Button className="w-full" onClick={() => handleUpgrade('business')}>Upgrade to Business</Button>}
-                  </div>
-                </Card>
-                <Card className={subscription?.plan === 'enterprise' ? 'border-primary' : ''}>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Enterprise</h3>
-                      {subscription?.plan === 'enterprise' && <Badge variant="primary">Current</Badge>}
-                    </div>
-                    <div><span className="text-3xl font-bold">${PLAN_PRICING.enterprise.monthly}</span><span className="text-gray-500">/month</span></div>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Unlimited links</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Unlimited QR codes</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> 10-year analytics</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> {PLAN_LIMITS.enterprise.customDomains} custom domains</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Up to {PLAN_LIMITS.enterprise.teamMembers} team members</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> SSO & SAML</li>
-                      <li className="flex items-center gap-2"><Check className="w-4 h-4 text-success" /> Dedicated account manager</li>
-                    </ul>
-                    {subscription?.plan !== 'enterprise' && <Button className="w-full" onClick={() => handleUpgrade('enterprise')}>Contact Sales</Button>}
-                  </div>
-                </Card>
+                {allPlans
+                  .filter((p) => p.slug !== 'free')
+                  .map((plan) => (
+                    <Card key={plan.slug} className={subscription?.plan === plan.slug ? 'border-primary' : ''}>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">{plan.name}</h3>
+                          {subscription?.plan === plan.slug && <Badge variant="primary">Current</Badge>}
+                          {plan.is_coming_soon && <Badge variant="default">Coming Soon</Badge>}
+                        </div>
+                        <div><span className="text-3xl font-bold">${(plan.monthly_price / 100).toFixed(0)}</span><span className="text-gray-500">/month</span></div>
+                        <ul className="space-y-2 text-sm text-gray-600">
+                          {plan.features.map((feature) => (
+                            <li key={feature} className="flex items-center gap-2">
+                              <Check className="w-4 h-4 text-success" /> {feature}
+                            </li>
+                          ))}
+                        </ul>
+                        {subscription?.plan !== plan.slug && (
+                          plan.is_coming_soon ? (
+                            <Button className="w-full" variant="outline" disabled>Coming Soon</Button>
+                          ) : (
+                            <Button className="w-full" onClick={() => handleUpgrade(plan.slug)}>{plan.cta_text}</Button>
+                          )
+                        )}
+                      </div>
+                    </Card>
+                  ))}
               </div>
             </>
           )}

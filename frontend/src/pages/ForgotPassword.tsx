@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
+import { SEO } from '@/components/common/SEO';
 import { authAPI } from '@/services/api';
 import toast from 'react-hot-toast';
 
@@ -19,6 +20,14 @@ export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Cooldown timer for resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const {
     register,
@@ -34,14 +43,36 @@ export function ForgotPasswordPage() {
       await authAPI.forgotPassword(data.email);
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
+      setResendCooldown(60);
     } catch (error: any) {
+      if (!error.response) {
+        toast.error('Network error. Please check your connection.');
+        setIsLoading(false);
+        return;
+      }
       // Don't reveal if email exists or not for security
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
+      setResendCooldown(60);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleResend = useCallback(async () => {
+    if (resendCooldown > 0 || !submittedEmail) return;
+    setIsLoading(true);
+    try {
+      await authAPI.forgotPassword(submittedEmail);
+      toast.success('Reset instructions sent again!');
+      setResendCooldown(60);
+    } catch {
+      toast.success('If an account exists, reset instructions have been sent.');
+      setResendCooldown(60);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [resendCooldown, submittedEmail]);
 
   if (isSubmitted) {
     return (
@@ -56,9 +87,17 @@ export function ForgotPasswordPage() {
               If an account exists for <strong>{submittedEmail}</strong>, we've sent password reset instructions.
             </p>
             <p className="text-sm text-gray-500 mb-6">
-              Didn't receive the email? Check your spam folder or try again with a different email address.
+              Didn't receive the email? Check your spam folder or try resending.
             </p>
             <div className="space-y-3">
+              <Button
+                className="w-full"
+                onClick={handleResend}
+                isLoading={isLoading}
+                disabled={resendCooldown > 0}
+              >
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend email'}
+              </Button>
               <Button
                 variant="outline"
                 className="w-full"
@@ -83,6 +122,7 @@ export function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO title="Forgot Password - TinlyLink" description="Reset your TinlyLink account password." />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <Link to="/" className="flex justify-center">
@@ -105,6 +145,8 @@ export function ForgotPasswordPage() {
               label="Email address"
               type="email"
               placeholder="you@example.com"
+              autoFocus
+              disabled={isLoading}
               leftIcon={<Mail className="w-4 h-4" />}
               error={errors.email?.message}
               {...register('email')}

@@ -2,9 +2,16 @@
 Production settings for TinlyLink.
 """
 
+from django.core.exceptions import ImproperlyConfigured
 from decouple import Csv, config
 
 DEBUG = False
+
+# Ensure SECRET_KEY is explicitly set in production (not the base.py default)
+_secret = config("DJANGO_SECRET_KEY", default="")
+if not _secret or _secret == "change-me-in-production-not-for-real-use!":
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set to a secure value in production.")
+SECRET_KEY = _secret
 
 ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS", cast=Csv())
 
@@ -17,11 +24,13 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default="tinlylink-assets")
-AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="us-east-1")
+AWS_S3_REGION_NAME = config("AWS_S3_REGION_NAME", default="auto")
+AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default="")
 AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = "private"
+AWS_DEFAULT_ACL = None
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_QUERYSTRING_EXPIRE = 3600  # 1 hour signed URLs
+AWS_QUERYSTRING_AUTH = True
 
 
 SESSION_COOKIE_SECURE = True

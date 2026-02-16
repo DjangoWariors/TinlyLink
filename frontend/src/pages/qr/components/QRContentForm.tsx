@@ -2,9 +2,11 @@ import React from 'react';
 import {
     Search, X, Check, Zap, Globe, Lock,
 } from 'lucide-react';
+import { Link as RouterLink } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle } from '@/components/common/Card';
 import { Loading, Badge } from '@/components/common';
+import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { linksAPI } from '@/services/api';
 import { useDebounce } from '@/hooks';
@@ -120,7 +122,7 @@ export function QRContentForm({
                 {qrType === 'wifi' && (
                     <div className="space-y-3">
                         <div><label className="label">Network Name (SSID) *</label><Input value={d.ssid || ''} onChange={e => updateField('ssid', e.target.value)} placeholder="MyWiFi" /></div>
-                        <div><label className="label">Password</label><Input type="password" value={d.password || ''} onChange={e => updateField('password', e.target.value)} placeholder="••••••••" /></div>
+                        <div><label className="label">Password</label><Input type="text" value={d.password || ''} onChange={e => updateField('password', e.target.value)} placeholder="WiFi password" /></div>
                         <div>
                             <label className="label">Security Type</label>
                             <select className="input" value={d.auth || 'WPA'} onChange={e => updateField('auth', e.target.value)}>
@@ -305,9 +307,14 @@ export function QRContentForm({
                 )}
 
                 {qrType === 'serial' && (
-                    <div className="p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
-                        <p className="font-medium mb-1">Serial Code QR</p>
-                        <p>Serial QR codes are generated via the Serial Batches module. Use the Serial Batches page to create bulk product authentication codes.</p>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                        <p className="text-sm font-medium text-blue-800 mb-1">Serial Code QR</p>
+                        <p className="text-sm text-blue-700 mb-3">
+                            Serial QR codes are generated via the Serial Batches module. Create bulk product authentication codes with unique tracking.
+                        </p>
+                        <RouterLink to="/dashboard/serial-batches">
+                            <Button variant="outline" size="sm">Go to Serial Batches</Button>
+                        </RouterLink>
                     </div>
                 )}
             </div>

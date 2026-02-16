@@ -33,9 +33,11 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button, Input, Card, Badge, Modal, Loading, EmptyState, Tabs } from '@/components/common';
+import { QRFramedRenderer } from '@/components/qr';
 import { serialAPI, getErrorMessage } from '@/services/api';
+import { useQRDownload } from '@/hooks/useQRDownload';
 import { useDebounce } from '@/hooks';
-import type { SerialBatch, SerialCode, SerialBatchStatus } from '@/types';
+import type { SerialBatch, SerialCode, SerialBatchStatus, QRStyle, QRFrame, QREyeStyle, QRGradientDirection } from '@/types';
 
 // Status configuration
 const STATUS_CONFIG: Record<SerialBatchStatus, { label: string; icon: typeof CheckCircle; color: string }> = {
@@ -63,6 +65,8 @@ export function SerialBatchDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const { download: downloadQR } = useQRDownload();
 
   // State
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'codes');
@@ -634,28 +638,76 @@ export function SerialBatchDetailPage() {
         title="Serial Code Details"
         size="lg"
       >
-        {selectedCode && (
+        {selectedCode && batch && (
           <div className="space-y-6">
-            {/* Code Info */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <QrCode className="w-6 h-6 text-primary" />
-                </div>
-                <div>
+            {/* Code Info + QR Code */}
+            <div className="flex flex-col sm:flex-row gap-4 p-4 bg-gray-50 rounded-lg">
+              {/* QR Code */}
+              <div
+                className="flex-shrink-0 flex items-center justify-center p-3 rounded-lg"
+                style={{ backgroundColor: batch.background_color || '#FFFFFF' }}
+              >
+                <QRFramedRenderer
+                  id={`serial-qr-${selectedCode.id}`}
+                  value={selectedCode.verify_url || selectedCode.short_url || selectedCode.verification_url || `https://example.com/verify/${selectedCode.serial_number}`}
+                  size={140}
+                  style={(batch.style as QRStyle) || 'square'}
+                  frame={(batch.frame as QRFrame) || 'none'}
+                  fgColor={batch.foreground_color || '#000000'}
+                  bgColor={batch.background_color || '#FFFFFF'}
+                  level="H"
+                  logoUrl={batch.logo_url || undefined}
+                  eyeStyle={(batch.eye_style as QREyeStyle) || 'square'}
+                  eyeColor={batch.eye_color || undefined}
+                  gradientEnabled={batch.gradient_enabled || false}
+                  gradientStart={batch.gradient_start || '#000000'}
+                  gradientEnd={batch.gradient_end || '#666666'}
+                  gradientDirection={(batch.gradient_direction as QRGradientDirection) || 'vertical'}
+                />
+              </div>
+              {/* Code Details */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
                   <code className="text-lg font-mono font-bold">{selectedCode.serial_number}</code>
-                  <Badge className={`ml-2 ${CODE_STATUS_COLORS[selectedCode.status]}`}>
-                    {selectedCode.status}
-                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(selectedCode.serial_number)}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Badge className={CODE_STATUS_COLORS[selectedCode.status]}>
+                  {selectedCode.status}
+                </Badge>
+                {(selectedCode.verify_url || selectedCode.short_url) && (
+                  <p className="text-xs text-gray-500 mt-2 font-mono truncate">
+                    {selectedCode.verify_url || selectedCode.short_url}
+                  </p>
+                )}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      downloadQR(`serial-qr-${selectedCode.id}`, 'png', `serial-${selectedCode.serial_number}`);
+                      toast.success('Downloaded PNG', { id: 'serial-download' });
+                    }}
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1" /> PNG
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      downloadQR(`serial-qr-${selectedCode.id}`, 'svg', `serial-${selectedCode.serial_number}`);
+                      toast.success('Downloaded SVG', { id: 'serial-download' });
+                    }}
+                  >
+                    <Download className="w-3.5 h-3.5 mr-1" /> SVG
+                  </Button>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => copyToClipboard(selectedCode.serial_number)}
-              >
-                <Copy className="w-4 h-4" />
-              </Button>
             </div>
 
             {/* Stats Grid */}

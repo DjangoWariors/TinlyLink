@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Plus, Download, Trash2, MoreVertical, ExternalLink,
     Search, Filter, X, ChevronLeft, ChevronRight, QrCode,
-    CheckSquare, Square, Pencil
+    CheckSquare, Square, Pencil, Copy
 } from 'lucide-react';
 
 import { Button } from '@/components/common/Button';
@@ -17,7 +17,8 @@ import { useTeam } from '@/contexts/TeamContext';
 import { useDebounce } from '@/hooks';
 import { useQRDownload } from '@/hooks/useQRDownload';
 import toast from 'react-hot-toast';
-import type { QRCode as QRCodeType, QRStyle } from '@/types';
+import { formatDistanceToNow } from 'date-fns';
+import type { QRCode as QRCodeType, QRStyle, QRType } from '@/types';
 
 const PAGE_SIZE = 20;
 
@@ -40,12 +41,13 @@ export function QRCodesPage() {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { isTeamMode, canEdit } = useTeam();
-    const { download: downloadSvg } = useQRDownload();
+    const { download: clientDownload } = useQRDownload();
 
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [filterOpen, setFilterOpen] = useState(false);
     const [styleFilter, setStyleFilter] = useState<QRStyle | ''>('');
+    const [typeFilter, setTypeFilter] = useState<QRType | ''>('');
     const [selectedQRs, setSelectedQRs] = useState<Set<string>>(new Set());
     const [isBatchDownloading, setIsBatchDownloading] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -54,11 +56,12 @@ export function QRCodesPage() {
     const debouncedSearch = useDebounce(search, 300);
 
     const { data, isLoading, isFetching } = useQuery({
-        queryKey: ['qrCodes', page, debouncedSearch, styleFilter],
+        queryKey: ['qrCodes', page, debouncedSearch, styleFilter, typeFilter],
         queryFn: () => qrCodesAPI.getQRCodes({
             page,
             search: debouncedSearch || undefined,
             style: styleFilter || undefined,
+            qr_type: typeFilter || undefined,
         }),
     });
 
@@ -87,17 +90,18 @@ export function QRCodesPage() {
     };
 
     const handleDownload = async (qr: QRCodeType, format: 'png' | 'svg') => {
+        const basename = `qr-${qr.link_short_code || qr.id}`;
         // Try client-side SVG download first
         const svgEl = document.getElementById(`qr-card-${qr.id}`) as SVGSVGElement | null;
         if (svgEl) {
-            downloadSvg(svgEl, format, `qr-${qr.link_short_code}.${format}`);
+            clientDownload(svgEl, format, basename);
             toast.success(`Downloaded ${format.toUpperCase()}`, { id: 'qr-download' });
             return;
         }
         // Fallback to server-side download
         try {
             const blob = await qrCodesAPI.downloadQRCode(qr.id, format);
-            downloadBlob(blob, `qr-${qr.link_short_code}.${format}`);
+            downloadBlob(blob, `${basename}.${format}`);
             toast.success(`Downloaded ${format.toUpperCase()}`, { id: 'qr-download' });
         } catch (e) {
             toast.error(getErrorMessage(e), { id: 'qr-download' });
@@ -106,6 +110,7 @@ export function QRCodesPage() {
 
     const clearFilters = () => {
         setStyleFilter('');
+        setTypeFilter('');
         setSearch('');
         setPage(1);
     };
@@ -125,6 +130,14 @@ export function QRCodesPage() {
         setSelectedQRs(newSelected);
     };
 
+    const handleCopyUrl = (url: string) => {
+        navigator.clipboard.writeText(url).then(() => {
+            toast.success('URL copied to clipboard', { id: 'qr-copy' });
+        }).catch(() => {
+            toast.error('Failed to copy URL', { id: 'qr-copy' });
+        });
+    };
+
     const handleBatchDownload = async (format: 'png' | 'svg') => {
         setIsBatchDownloading(true);
         try {
@@ -140,7 +153,7 @@ export function QRCodesPage() {
         }
     };
 
-    const hasActiveFilters = styleFilter !== '' || search !== '';
+    const hasActiveFilters = styleFilter !== '' || typeFilter !== '' || search !== '';
     const totalCount = data?.count || 0;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
     const startItem = (page - 1) * PAGE_SIZE + 1;
@@ -170,7 +183,17 @@ export function QRCodesPage() {
                 <Card className="bg-primary-50 border-primary/20">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-primary">{selectedQRs.size} selected</span>
+                            <button
+                                onClick={toggleSelectAll}
+                                className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-700"
+                            >
+                                {selectedQRs.size === qrCodes.length
+                                    ? <CheckSquare className="w-4 h-4" />
+                                    : <Square className="w-4 h-4" />
+                                }
+                                {selectedQRs.size === qrCodes.length ? 'Deselect All' : 'Select All'}
+                            </button>
+                            <span className="text-sm text-primary">{selectedQRs.size} selected</span>
                             <button onClick={() => setSelectedQRs(new Set())} className="text-sm text-gray-500 hover:text-gray-700">Clear</button>
                         </div>
                         <Dropdown
@@ -195,7 +218,7 @@ export function QRCodesPage() {
                         <Input
                             placeholder="Search QR codes by link URL or title..."
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); setSelectedQRs(new Set()); }}
                             leftIcon={<Search className="w-4 h-4" />}
                             rightIcon={search ? <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button> : undefined}
                         />
@@ -213,8 +236,33 @@ export function QRCodesPage() {
                     <div className="mt-4 pt-4 border-t border-gray-200">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
+                                <label className="label">Type</label>
+                                <select className="input" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value as QRType | ''); setPage(1); setSelectedQRs(new Set()); }}>
+                                    <option value="">All Types</option>
+                                    <option value="link">Link</option>
+                                    <option value="vcard">vCard</option>
+                                    <option value="wifi">WiFi</option>
+                                    <option value="email">Email</option>
+                                    <option value="sms">SMS</option>
+                                    <option value="phone">Phone</option>
+                                    <option value="text">Text</option>
+                                    <option value="calendar">Calendar</option>
+                                    <option value="location">Location</option>
+                                    <option value="upi">UPI</option>
+                                    <option value="pix">Pix</option>
+                                    <option value="product">Product</option>
+                                    <option value="menu">Menu</option>
+                                    <option value="document">Document</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="multi_url">Multi URL</option>
+                                    <option value="app_store">App Store</option>
+                                    <option value="social">Social</option>
+                                    <option value="serial">Serial</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label className="label">Style</label>
-                                <select className="input" value={styleFilter} onChange={(e) => { setStyleFilter(e.target.value as QRStyle | ''); setPage(1); }}>
+                                <select className="input" value={styleFilter} onChange={(e) => { setStyleFilter(e.target.value as QRStyle | ''); setPage(1); setSelectedQRs(new Set()); }}>
                                     <option value="">All Styles</option>
                                     <option value="square">Square</option>
                                     <option value="dots">Dots</option>
@@ -268,19 +316,19 @@ export function QRCodesPage() {
                                         id={`qr-card-${qr.id}`}
                                         value={qr.short_url}
                                         size={200}
-                                        style={qr.style as any || 'square'}
-                                        frame={qr.frame as any || 'none'}
+                                        style={qr.style || 'square'}
+                                        frame={qr.frame || 'none'}
                                         fgColor={qr.foreground_color}
                                         bgColor={qr.background_color}
                                         level="H"
                                         logoUrl={qr.logo_url || undefined}
                                         frameText={qr.frame_text}
-                                        eyeStyle={qr.eye_style as any || 'square'}
+                                        eyeStyle={qr.eye_style || 'square'}
                                         eyeColor={qr.eye_color}
                                         gradientEnabled={qr.gradient_enabled}
                                         gradientStart={qr.gradient_start}
                                         gradientEnd={qr.gradient_end}
-                                        gradientDirection={qr.gradient_direction as any}
+                                        gradientDirection={qr.gradient_direction}
                                     />
                                 </div>
                                 {/* Hover overlay */}
@@ -302,16 +350,17 @@ export function QRCodesPage() {
                                             {qr.title || qr.link_short_code || qr.qr_type}
                                         </p>
                                         <p className="text-sm text-gray-500 truncate mt-0.5">
-                                            {qr.link_original_url || (qr.qr_type !== 'link' ? qr.qr_type.toUpperCase() + ' QR' : '')}
+                                            {qr.link_original_url || (qr.qr_type !== 'link' ? qr.qr_type.replace('_', ' ').toUpperCase() + ' QR' : '')}
                                         </p>
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <Badge variant="primary" className="text-xs capitalize">{qr.qr_type}</Badge>
-                                            <Badge variant="default" className="text-xs">{qr.style}</Badge>
-                                            <span className="text-xs text-gray-400">{qr.total_scans} scans</span>
-                                            {isTeamMode && qr.created_by_name && (
-                                                <span className="text-xs text-gray-400">by {qr.created_by_name}</span>
-                                            )}
+                                        <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                                            <Badge variant="primary" className="text-xs capitalize">{qr.qr_type.replace('_', ' ')}</Badge>
+                                            {qr.is_dynamic && <Badge variant="warning" className="text-xs">Dynamic</Badge>}
+                                            <span className="text-xs text-gray-400">{qr.total_scans} scan{qr.total_scans !== 1 ? 's' : ''}</span>
                                         </div>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            {formatDistanceToNow(new Date(qr.created_at), { addSuffix: true })}
+                                            {isTeamMode && qr.created_by_name ? ` by ${qr.created_by_name}` : ''}
+                                        </p>
                                     </div>
                                     <Dropdown
                                         trigger={
@@ -331,6 +380,9 @@ export function QRCodesPage() {
                                                 <Pencil className="w-4 h-4" /><span>Edit QR Code</span>
                                             </DropdownItem>
                                         )}
+                                        <DropdownItem onClick={() => handleCopyUrl(qr.short_url)}>
+                                            <Copy className="w-4 h-4" /><span>Copy URL</span>
+                                        </DropdownItem>
                                         <DropdownItem onClick={() => window.open(qr.short_url, '_blank')}>
                                             <ExternalLink className="w-4 h-4" /><span>Open Link</span>
                                         </DropdownItem>
@@ -355,11 +407,11 @@ export function QRCodesPage() {
                         <span className="font-medium">{totalCount}</span> QR codes
                     </p>
                     <div className="flex items-center gap-1 order-1 sm:order-2">
-                        <Button variant="ghost" size="sm" disabled={page === 1 || isFetching} onClick={() => setPage(page - 1)} className="px-2">
+                        <Button variant="ghost" size="sm" disabled={page === 1 || isFetching} onClick={() => { setPage(page - 1); setSelectedQRs(new Set()); }} className="px-2">
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
                         <span className="px-3 py-1.5 text-sm text-gray-600 min-w-[90px] text-center">Page {page} of {totalPages}</span>
-                        <Button variant="ghost" size="sm" disabled={page === totalPages || isFetching} onClick={() => setPage(page + 1)} className="px-2">
+                        <Button variant="ghost" size="sm" disabled={page === totalPages || isFetching} onClick={() => { setPage(page + 1); setSelectedQRs(new Set()); }} className="px-2">
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
@@ -379,18 +431,18 @@ export function QRCodesPage() {
                                 <QRFramedRenderer
                                     value={qrToDelete.short_url}
                                     size={64}
-                                    style={qrToDelete.style as any || 'square'}
-                                    frame={qrToDelete.frame as any || 'none'}
+                                    style={qrToDelete.style || 'square'}
+                                    frame={qrToDelete.frame || 'none'}
                                     fgColor={qrToDelete.foreground_color}
                                     bgColor={qrToDelete.background_color}
                                     level="H"
                                     logoUrl={qrToDelete.logo_url || undefined}
-                                    eyeStyle={qrToDelete.eye_style as any || 'square'}
+                                    eyeStyle={qrToDelete.eye_style || 'square'}
                                     eyeColor={qrToDelete.eye_color}
                                     gradientEnabled={qrToDelete.gradient_enabled}
                                     gradientStart={qrToDelete.gradient_start}
                                     gradientEnd={qrToDelete.gradient_end}
-                                    gradientDirection={qrToDelete.gradient_direction as any}
+                                    gradientDirection={qrToDelete.gradient_direction}
                                 />
                             </div>
                             <div className="min-w-0 flex-1">

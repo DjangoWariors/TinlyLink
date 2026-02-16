@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { QrCode, Eye } from 'lucide-react';
+import { QrCode, Download } from 'lucide-react';
 import { QRFramedRenderer } from '@/components/qr';
 import { Button } from '@/components/common/Button';
 import { Card, CardHeader, CardTitle } from '@/components/common/Card';
+import { useQRDownload } from '@/hooks/useQRDownload';
 import type { QRDesignState } from '@/hooks/useQRDesign';
 
 interface QRPreviewPanelProps {
@@ -19,11 +20,22 @@ interface QRPreviewPanelProps {
     extraContent?: React.ReactNode;
     /** SVG element id for download hooks */
     svgId?: string;
+    /** Download filename base (e.g. "qr-abc123") */
+    downloadFilename?: string;
+    /** Show/hide cancel link (default true) */
+    showCancel?: boolean;
 }
 
 export function QRPreviewPanel({
-    value, design, typeLabel, primaryAction, extraContent, svgId = 'qr-preview',
+    value, design, typeLabel, primaryAction, extraContent,
+    svgId = 'qr-preview', downloadFilename = 'qr-code', showCancel = true,
 }: QRPreviewPanelProps) {
+    const { download } = useQRDownload();
+
+    const handleDownload = (format: 'png' | 'svg') => {
+        download(svgId, format, downloadFilename);
+    };
+
     return (
         <div className="sticky top-6">
             <Card>
@@ -51,6 +63,16 @@ export function QRPreviewPanel({
                     />
                 </div>
 
+                {/* Download buttons */}
+                <div className="flex gap-2 mt-4">
+                    <Button variant="outline" size="sm" onClick={() => handleDownload('png')} className="flex-1">
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> PNG
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDownload('svg')} className="flex-1">
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> SVG
+                    </Button>
+                </div>
+
                 {extraContent}
 
                 <div className="mt-4 pt-4 border-t border-gray-100 text-center">
@@ -62,9 +84,11 @@ export function QRPreviewPanel({
 
                 <div className="mt-4 space-y-2">
                     {primaryAction}
-                    <Link to="/dashboard/qr-codes" className="block">
-                        <Button variant="ghost" className="w-full">Cancel</Button>
-                    </Link>
+                    {showCancel && (
+                        <Link to="/dashboard/qr-codes" className="block">
+                            <Button variant="ghost" className="w-full">Cancel</Button>
+                        </Link>
+                    )}
                 </div>
             </Card>
         </div>

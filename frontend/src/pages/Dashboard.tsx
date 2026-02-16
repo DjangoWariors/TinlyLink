@@ -17,7 +17,7 @@ import { Card, CardHeader, CardTitle } from '@/components/common/Card';
 import { StatCard, Badge, Loading, EmptyState, ProgressBar } from '@/components/common';
 import { linksAPI, analyticsAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { PLAN_LIMITS } from '@/config';
+import { usePlans } from '@/hooks/usePlans';
 import { formatDistanceToNow, format } from 'date-fns';
 import toast from 'react-hot-toast';
 
@@ -42,6 +42,8 @@ function getGreeting(): string {
 export function DashboardPage() {
   const queryClient = useQueryClient();
   const { user, subscription, usage, refreshUser } = useAuth();
+  const { plans } = usePlans();
+  const proPlan = plans.find((p) => p.slug === 'pro');
   const [url, setUrl] = useState('');
   const [lastCreatedUrl, setLastCreatedUrl] = useState<string | null>(null);
   const [period, setPeriod] = useState('7d');
@@ -699,7 +701,7 @@ export function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">Upgrade to Pro</h3>
-                <p className="text-sm text-white/90 mt-1">Get {PLAN_LIMITS.pro.linksPerMonth.toLocaleString()} links/mo, custom domains, and full analytics retention.</p>
+                <p className="text-sm text-white/90 mt-1">Get {proPlan ? proPlan.limits.links_per_month.toLocaleString() : '500'} links/mo, custom domains, and full analytics retention.</p>
               </div>
             </div>
             <Link

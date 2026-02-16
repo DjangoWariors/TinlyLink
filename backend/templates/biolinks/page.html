@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.seo_title|default:page.title }} | TinlyLink</title>
+{% if page.seo_description %}<meta name="description" content="{{ page.seo_description }}">{% endif %}
+<meta property="og:title" content="{{ page.seo_title|default:page.title }}">
+<meta property="og:description" content="{{ page.seo_description|default:page.bio }}">
+{% if page.avatar_url %}<meta property="og:image" content="{{ page.avatar_url }}">{% endif %}
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;
+{% if page.theme == "dark" %}background:#111827;color:#f9fafb;
+{% elif page.theme == "gradient" %}background:linear-gradient(135deg,{{ page.background_color }},{{ page.button_color }});color:{{ page.text_color }};
+{% elif page.theme == "colorful" %}background:{{ page.background_color }};color:{{ page.text_color }};
+{% elif page.theme == "professional" %}background:#f8fafc;color:#1e293b;
+{% else %}background:{{ page.background_color }};color:{{ page.text_color }};{% endif %}
+}
+.container{max-width:480px;width:100%;padding:2rem 1.5rem}
+.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;display:block;border:3px solid rgba(255,255,255,0.2)}
+.title{font-size:1.5rem;font-weight:700;text-align:center;margin-bottom:0.5rem}
+.bio{text-align:center;opacity:0.8;font-size:0.95rem;margin-bottom:1.5rem;line-height:1.5}
+.links{display:flex;flex-direction:column;gap:0.75rem}
+.link-btn{display:block;width:100%;padding:1rem 1.5rem;text-decoration:none;font-weight:600;font-size:0.95rem;text-align:center;transition:transform 0.15s,box-shadow 0.15s;
+background:{{ page.button_color }};color:{{ page.button_text_color }};
+{% if page.button_style == "pill" %}border-radius:9999px;{% elif page.button_style == "square" %}border-radius:4px;{% elif page.button_style == "outline" %}border-radius:12px;background:transparent;border:2px solid {{ page.button_color }};color:{{ page.button_color }};{% else %}border-radius:12px;{% endif %}
+}
+.link-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+.link-desc{font-size:0.8rem;opacity:0.7;margin-top:0.25rem;font-weight:400}
+.social{display:flex;justify-content:center;gap:1rem;margin-top:2rem}
+.social a{opacity:0.6;text-decoration:none;font-size:0.85rem;transition:opacity 0.2s}
+.social a:hover{opacity:1}
+.footer{margin-top:2rem;text-align:center;font-size:0.75rem;opacity:0.4}
+.footer a{color:inherit;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="container">
+  {% if page.avatar_url %}
+  <img src="{{ page.avatar_url }}" alt="{{ page.title }}" class="avatar">
+  {% endif %}
+
+  <h1 class="title">{{ page.title }}</h1>
+  {% if page.bio %}<p class="bio">{{ page.bio }}</p>{% endif %}
+
+  <div class="links">
+    {% for bio_link in links %}
+    <a href="{{ bio_link.destination_url }}" class="link-btn" target="_blank" rel="noopener">
+      {{ bio_link.title }}
+      {% if bio_link.description %}<span class="link-desc">{{ bio_link.description }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  {% if page.social_links %}
+  <div class="social">
+    {% for social in page.social_links %}
+    <a href="{{ social.url }}" target="_blank" rel="noopener">{{ social.platform }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    <a href="https://tinlylink.com">Powered by TinlyLink</a>
+  </div>
+</div>
+</body>
+</html>

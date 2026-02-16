@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.seo_title|default:page.title }} | TinlyLink</title>
+{% if page.seo_description %}<meta name="description" content="{{ page.seo_description }}">{% endif %}
+<meta property="og:title" content="{{ page.seo_title|default:page.title }}">
+<meta property="og:description" content="{{ page.seo_description }}">
+{% if page.og_image_url %}<meta property="og:image" content="{{ page.og_image_url }}">{% endif %}
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;color:#111827;line-height:1.6}
+.block{padding:3rem 1.5rem;max-width:800px;margin:0 auto}
+.block-hero{text-align:center;padding:4rem 1.5rem;max-width:100%;margin:0;
+  background:{% if page.settings.hero_bg %}{{ page.settings.hero_bg }}{% else %}linear-gradient(135deg,#f6821f,#ff6b35){% endif %};
+  color:#fff}
+.block-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:1rem}
+.block-hero p{font-size:1.2rem;opacity:0.9;max-width:600px;margin:0 auto 2rem}
+.block-hero .cta-btn{display:inline-block;padding:1rem 2.5rem;background:#fff;color:#f6821f;
+  border-radius:8px;text-decoration:none;font-weight:700;font-size:1.1rem;transition:transform 0.2s}
+.block-hero .cta-btn:hover{transform:scale(1.05)}
+.block-text{font-size:1.05rem}
+.block-text h2{font-size:1.5rem;font-weight:700;margin-bottom:1rem}
+.block-image{text-align:center}
+.block-image img{max-width:100%;border-radius:12px}
+.block-image figcaption{margin-top:0.5rem;font-size:0.85rem;color:#6b7280}
+.block-cta{text-align:center;padding:3rem 1.5rem;background:#f9fafb;border-radius:16px;margin:2rem auto;max-width:700px}
+.block-cta h2{font-size:1.75rem;font-weight:700;margin-bottom:0.5rem}
+.block-cta p{color:#6b7280;margin-bottom:1.5rem}
+.block-cta .cta-btn{display:inline-block;padding:0.875rem 2rem;background:#f6821f;color:#fff;
+  border-radius:8px;text-decoration:none;font-weight:600;transition:background 0.2s}
+.block-cta .cta-btn:hover{background:#e5710f}
+.block-form{max-width:500px;margin:2rem auto;padding:2rem;background:#fff;border:1px solid #e5e7eb;border-radius:16px}
+.block-form h2{font-size:1.25rem;font-weight:700;margin-bottom:1rem;text-align:center}
+.form-field{margin-bottom:1rem}
+.form-field label{display:block;font-size:0.875rem;font-weight:500;color:#374151;margin-bottom:0.25rem}
+.form-field input,.form-field textarea,.form-field select{width:100%;padding:0.625rem 0.75rem;border:1px solid #d1d5db;border-radius:8px;font-size:0.95rem;outline:none}
+.form-field input:focus,.form-field textarea:focus{border-color:#f6821f;box-shadow:0 0 0 3px rgba(246,130,31,0.1)}
+.form-submit{width:100%;padding:0.75rem;background:#f6821f;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer}
+.form-submit:hover{background:#e5710f}
+.form-success{text-align:center;color:#059669;font-weight:600;padding:1rem}
+.footer{text-align:center;padding:2rem;font-size:0.75rem;color:#9ca3af}
+.footer a{color:inherit;text-decoration:none}
+</style>
+</head>
+<body>
+
+{% for block in page.blocks %}
+{% if block.type == "hero" %}
+<section class="block-hero" {% if block.settings.background_image %}style="background:url('{{ block.settings.background_image }}') center/cover"{% endif %}>
+  <h1>{{ block.content.heading|default:"" }}</h1>
+  {% if block.content.subheading %}<p>{{ block.content.subheading }}</p>{% endif %}
+  {% if block.content.cta_text %}
+  <a href="{{ block.content.cta_url|default:'#' }}" class="cta-btn">{{ block.content.cta_text }}</a>
+  {% endif %}
+</section>
+
+{% elif block.type == "text" %}
+<section class="block block-text">
+  {% if block.content.heading %}<h2>{{ block.content.heading }}</h2>{% endif %}
+  <div>{{ block.content.body|default:""|safe }}</div>
+</section>
+
+{% elif block.type == "image" %}
+<section class="block block-image">
+  <figure>
+    <img src="{{ block.content.url }}" alt="{{ block.content.alt|default:'' }}">
+    {% if block.content.caption %}<figcaption>{{ block.content.caption }}</figcaption>{% endif %}
+  </figure>
+</section>
+
+{% elif block.type == "cta" %}
+<section class="block-cta">
+  <h2>{{ block.content.heading|default:"" }}</h2>
+  {% if block.content.description %}<p>{{ block.content.description }}</p>{% endif %}
+  {% if block.content.button_text %}
+  <a href="{{ block.content.button_url|default:'#' }}" class="cta-btn">{{ block.content.button_text }}</a>
+  {% endif %}
+</section>
+
+{% elif block.type == "form" %}
+<section class="block block-form" id="form-{{ block.id }}">
+  {% if block.content.heading %}<h2>{{ block.content.heading }}</h2>{% endif %}
+  <form onsubmit="return submitForm(event, '{{ block.id }}')" data-block-id="{{ block.id }}">
+    {% for field in block.content.fields %}
+    <div class="form-field">
+      <label>{{ field.label }}{% if field.required %} *{% endif %}</label>
+      {% if field.type == "textarea" %}
+      <textarea name="{{ field.name }}" {% if field.required %}required{% endif %} rows="3" placeholder="{{ field.placeholder|default:'' }}"></textarea>
+      {% elif field.type == "select" %}
+      <select name="{{ field.name }}" {% if field.required %}required{% endif %}>
+        <option value="">Select...</option>
+        {% for opt in field.options %}<option value="{{ opt }}">{{ opt }}</option>{% endfor %}
+      </select>
+      {% else %}
+      <input type="{{ field.type|default:'text' }}" name="{{ field.name }}" {% if field.required %}required{% endif %} placeholder="{{ field.placeholder|default:'' }}">
+      {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="form-submit">{{ block.content.submit_text|default:"Submit" }}</button>
+  </form>
+  <div class="form-success" style="display:none">{{ block.content.success_message|default:"Thank you! Your submission has been received." }}</div>
+</section>
+{% endif %}
+{% endfor %}
+
+<div class="footer">
+  <a href="https://tinlylink.com">Powered by TinlyLink</a>
+</div>
+
+<script>
+function submitForm(e, blockId) {
+  e.preventDefault();
+  var form = e.target;
+  var data = {};
+  var fields = form.querySelectorAll('input, textarea, select');
+  fields.forEach(function(f) { if (f.name) data[f.name] = f.value; });
+
+  fetch('/p/{{ page.slug }}/submit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({block_id: blockId, data: data})
+  }).then(function(r) {
+    if (r.ok) {
+      form.style.display = 'none';
+      form.parentElement.querySelector('.form-success').style.display = 'block';
+    }
+  });
+  return false;
+}
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@ Admin configuration for users app.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Subscription, APIKey, UsageTracking
+from .models import User, Subscription, APIKey, UsageTracking, NotificationSettings, Integration, UserSession, ExportJob
 
 
 @admin.register(User)
@@ -56,3 +56,39 @@ class UsageTrackingAdmin(admin.ModelAdmin):
     list_filter = ["period_start"]
     search_fields = ["user__email"]
     raw_id_fields = ["user"]
+
+
+@admin.register(NotificationSettings)
+class NotificationSettingsAdmin(admin.ModelAdmin):
+    list_display = ["user"]
+    search_fields = ["user__email"]
+    raw_id_fields = ["user"]
+
+
+@admin.register(Integration)
+class IntegrationAdmin(admin.ModelAdmin):
+    list_display = ["provider", "user", "status", "connected_at", "created_at"]
+    list_filter = ["provider", "status", "created_at"]
+    search_fields = ["user__email", "provider"]
+    raw_id_fields = ["user"]
+
+
+@admin.register(UserSession)
+class UserSessionAdmin(admin.ModelAdmin):
+    list_display = ["user", "ip_address", "last_active", "created_at"]
+    list_filter = ["created_at"]
+    search_fields = ["user__email", "ip_address"]
+    raw_id_fields = ["user"]
+    readonly_fields = ["session_key", "created_at"]
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(ExportJob)
+class ExportJobAdmin(admin.ModelAdmin):
+    list_display = ["user", "export_type", "status", "created_at"]
+    list_filter = ["export_type", "status", "created_at"]
+    search_fields = ["user__email"]
+    raw_id_fields = ["user"]
+    readonly_fields = ["created_at", "completed_at"]

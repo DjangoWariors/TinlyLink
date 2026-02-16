@@ -38,7 +38,15 @@ export function LoginPage() {
       await login(data);
       toast.success('Welcome back!');
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Invalid email or password');
+      if (!error.response) {
+        toast.error('Network error. Please check your connection.');
+      } else if (error.response.status === 401) {
+        toast.error('Invalid email or password.');
+      } else if (error.response.status === 429) {
+        toast.error('Too many attempts. Please try again later.');
+      } else {
+        toast.error(error.response?.data?.error || 'Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +99,8 @@ export function LoginPage() {
               label="Email"
               type="email"
               placeholder="you@example.com"
+              autoFocus
+              disabled={isLoading}
               leftIcon={<Mail className="w-4 h-4" />}
               error={errors.email?.message}
               {...register('email')}
@@ -99,6 +109,7 @@ export function LoginPage() {
               label="Password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
+              disabled={isLoading}
               leftIcon={<Lock className="w-4 h-4" />}
               rightIcon={
                 <button

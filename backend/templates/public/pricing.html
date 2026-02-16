@@ -74,7 +74,6 @@
         "text": "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be charged a prorated amount. When downgrading, the change takes effect at the start of your next billing cycle."
       }
     },
-
     {
       "@type": "Question",
       "name": "What happens to my links if I downgrade?",
@@ -113,171 +112,71 @@
 
 <section class="py-20 -mt-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div class="grid md:grid-cols-2 lg:grid-cols-{{ plans|length }} gap-8 max-w-6xl mx-auto">
+            {% for plan in plans %}
+            <div class="relative bg-white rounded-2xl border-2 {% if plan.is_popular and not plan.is_coming_soon %}border-primary shadow-xl scale-105 z-10{% else %}border-gray-200{% endif %} p-8">
 
-            <div class="relative bg-white rounded-2xl border-2 border-gray-200 p-8">
+                {% if plan.is_coming_soon %}
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gray-500 text-white text-sm font-semibold rounded-full">
+                    Coming Soon
+                </div>
+                {% elif plan.is_popular %}
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-semibold rounded-full">
+                    {% if plan.badge_text %}{{ plan.badge_text }}{% else %}Most Popular{% endif %}
+                </div>
+                {% endif %}
+
                 <div class="text-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900">Free</h3>
-                    <p class="text-gray-500 text-sm mt-1">Perfect for getting started</p>
+                    <h3 class="text-xl font-semibold text-gray-900">{{ plan.name }}</h3>
+                    <p class="text-gray-500 text-sm mt-1">{{ plan.description }}</p>
                     <div class="mt-4">
+                        {% if plan.monthly_price == 0 %}
                         <span class="text-4xl font-bold text-gray-900">$0</span>
+                        {% else %}
+                        <span class="text-4xl font-bold text-gray-900 price-{{ plan.slug }}">${{ plan.monthly_display|floatformat:0 }}</span>
+                        <span class="text-gray-500">/month</span>
+                        {% endif %}
                     </div>
+                    {% if plan.yearly_price > 0 %}
+                    <p class="text-sm text-gray-500 mt-1 yearly-note-{{ plan.slug }}" style="display:none;">
+                        ${{ plan.yearly_display|floatformat:0 }} billed yearly
+                    </p>
+                    {% endif %}
                 </div>
+
                 <ul class="space-y-3 mb-8">
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
+                    {% for feature in plan.features_json %}
+                    <li class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">50 links per month</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">10 QR codes per month</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">30-day analytics</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Basic link tracking</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">Custom slugs</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">Password protection</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">Custom domains</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">API access</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">Priority support</span></li>
+                        </svg>
+                        <span class="text-gray-600">{{ feature }}</span>
+                    </li>
+                    {% endfor %}
                 </ul>
+
+                {% if plan.is_coming_soon %}
+                <span class="block w-full text-center py-2 px-4 border border-gray-300 text-gray-400 rounded-lg font-medium cursor-not-allowed">
+                    Coming Soon
+                </span>
+                {% elif plan.monthly_price == 0 %}
                 <a href="/register"
-                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">Get
-                    Started</a>
+                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">
+                    {{ plan.cta_text }}
+                </a>
+                {% elif plan.is_popular %}
+                <a href="/register?plan={{ plan.slug }}"
+                    class="block w-full text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">
+                    {{ plan.cta_text }}
+                </a>
+                {% else %}
+                <a href="/register?plan={{ plan.slug }}"
+                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">
+                    {{ plan.cta_text }}
+                </a>
+                {% endif %}
             </div>
-
-            <div class="relative bg-white rounded-2xl border-2 border-primary shadow-xl scale-105 z-10 p-8">
-                <div
-                    class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-sm font-semibold rounded-full">
-                    Most Popular</div>
-                <div class="text-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900">Pro</h3>
-                    <p class="text-gray-500 text-sm mt-1">Best for professionals</p>
-                    <div class="mt-4">
-                        <span class="text-4xl font-bold text-gray-900 price-pro">$9</span>
-                        <span class="text-gray-500">/month</span>
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">500 links per month</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">100 QR codes per month</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">1-year analytics retention</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Advanced analytics</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Custom slugs</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Password protection</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">1 Custom domain</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">API access (1k calls/mo)</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-gray-300" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg> <span class="text-gray-400">Priority support</span></li>
-                </ul>
-                <a href="/register?plan=pro"
-                    class="block w-full text-center py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-700 transition-colors font-medium">Start
-                    Free Trial</a>
-            </div>
-
-            <div class="relative bg-white rounded-2xl border-2 border-gray-200 p-8">
-                <div class="text-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900">Business</h3>
-                    <p class="text-gray-500 text-sm mt-1">For teams and enterprises</p>
-                    <div class="mt-4">
-                        <span class="text-4xl font-bold text-gray-900 price-business">$29</span>
-                        <span class="text-gray-500">/month</span>
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-8">
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Unlimited links</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Unlimited QR codes</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Lifetime analytics</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Advanced analytics</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Custom slugs</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Password protection</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">5 Custom domains</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Unlimited API calls</span></li>
-                    <li class="flex items-start gap-3"><svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg> <span class="text-gray-600">Priority support</span></li>
-                </ul>
-                <a href="/register?plan=business"
-                    class="block w-full text-center py-2 px-4 border border-primary text-primary rounded-lg hover:bg-primary-50 transition-colors font-medium">Start
-                    Free Trial</a>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -291,69 +190,95 @@
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full max-w-4xl mx-auto">
+            <table class="w-full max-w-5xl mx-auto">
                 <thead>
                     <tr class="border-b border-gray-200">
                         <th class="py-4 text-left text-sm font-semibold text-gray-900">Feature</th>
-                        <th class="py-4 text-center text-sm font-semibold text-gray-900">Free</th>
-                        <th class="py-4 text-center text-sm font-semibold text-primary">Pro</th>
-                        <th class="py-4 text-center text-sm font-semibold text-gray-900">Business</th>
+                        {% for plan in plans %}
+                        <th class="py-4 text-center text-sm font-semibold {% if plan.is_popular %}text-primary{% else %}text-gray-900{% endif %}">{{ plan.name }}</th>
+                        {% endfor %}
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Links per month</td>
-                        <td class="py-4 text-center text-sm text-gray-600">50</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">500</td>
-                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.links_per_month == -1 %}Unlimited{% else %}{{ plan.links_per_month|floatformat:0 }}{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">QR codes per month</td>
-                        <td class="py-4 text-center text-sm text-gray-600">10</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">100</td>
-                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.qr_codes_per_month == -1 %}Unlimited{% else %}{{ plan.qr_codes_per_month|floatformat:0 }}{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Analytics retention</td>
-                        <td class="py-4 text-center text-sm text-gray-600">30 days</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1 year</td>
-                        <td class="py-4 text-center text-sm text-gray-600">Forever</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.analytics_retention_days >= 3650 %}10 years{% elif plan.analytics_retention_days >= 730 %}2 years{% elif plan.analytics_retention_days >= 365 %}1 year{% else %}{{ plan.analytics_retention_days }} days{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Custom slugs</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&check;</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.custom_slugs %}&check;{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Password protection</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&check;</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.password_protection %}&check;{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Custom domains</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1</td>
-                        <td class="py-4 text-center text-sm text-gray-600">5</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.custom_domains > 0 %}{{ plan.custom_domains }}{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">API calls per month</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1,000</td>
-                        <td class="py-4 text-center text-sm text-gray-600">Unlimited</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.api_calls_per_month == -1 %}Unlimited{% elif plan.api_calls_per_month > 0 %}{{ plan.api_calls_per_month|floatformat:0 }}{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Team members</td>
-                        <td class="py-4 text-center text-sm text-gray-600">1</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">1</td>
-                        <td class="py-4 text-center text-sm text-gray-600">5</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.team_members > 0 %}{{ plan.team_members }}{% else %}1{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                     <tr>
                         <td class="py-4 text-sm text-gray-600">Priority support</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-900 font-medium">&mdash;</td>
-                        <td class="py-4 text-center text-sm text-gray-600">&check;</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.priority_support %}&check;{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="py-4 text-sm text-gray-600">SSO &amp; SAML</td>
+                        {% for plan in plans %}
+                        <td class="py-4 text-center text-sm {% if plan.is_popular %}text-gray-900 font-medium{% else %}text-gray-600{% endif %}">
+                            {% if plan.sso %}&check;{% else %}&mdash;{% endif %}
+                        </td>
+                        {% endfor %}
                     </tr>
                 </tbody>
             </table>
@@ -395,7 +320,6 @@
         { q: 'Do you offer refunds?', a: "We offer a 14-day money-back guarantee. If you're not satisfied within the first 14 days, contact us for a full refund." },
         { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, Mastercard, American Express) through our secure payment processor, Stripe.' },
         { q: 'Can I change plans later?', a: "Yes, you can upgrade or downgrade your plan at any time. When upgrading, you'll be charged a prorated amount. When downgrading, the change takes effect at the start of your next billing cycle." },
-
         { q: 'What happens to my links if I downgrade?', a: "Your existing links will continue to work. However, if you exceed your new plan's limits, you won't be able to create new links until usage falls within limits or you upgrade." },
     ];
     const faqContainer = document.getElementById('faq-container');
@@ -419,22 +343,38 @@
         icon.classList.toggle('rotate-180');
     }
 
+    // Plan pricing data from server
+    const planPrices = {
+        {% for plan in plans %}{% if plan.monthly_price > 0 %}
+        '{{ plan.slug }}': { monthly: {{ plan.monthly_display }}, yearlyMonthly: {{ plan.yearly_monthly_display }}, yearly: {{ plan.yearly_display }} },
+        {% endif %}{% endfor %}
+    };
+
     function setBilling(cycle) {
         const monthlyBtn = document.getElementById('btn-monthly');
         const yearlyBtn = document.getElementById('btn-yearly');
-        const pricePro = document.querySelector('.price-pro');
-        const priceBiz = document.querySelector('.price-business');
 
         if (cycle === 'monthly') {
             monthlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-secondary';
             yearlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors text-white hover:text-gray-200';
-            pricePro.textContent = '$9';
-            priceBiz.textContent = '$29';
         } else {
             monthlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors text-white hover:text-gray-200';
             yearlyBtn.className = 'px-4 py-2 text-sm font-medium rounded-full transition-colors bg-white text-secondary';
-            pricePro.textContent = '$7.5'; // 90 / 12
-            priceBiz.textContent = '$24';  // 290 / 12
+        }
+
+        for (const [slug, prices] of Object.entries(planPrices)) {
+            const priceEl = document.querySelector('.price-' + slug);
+            const noteEl = document.querySelector('.yearly-note-' + slug);
+            if (priceEl) {
+                if (cycle === 'monthly') {
+                    priceEl.textContent = '$' + Math.round(prices.monthly);
+                } else {
+                    priceEl.textContent = '$' + Math.round(prices.yearlyMonthly);
+                }
+            }
+            if (noteEl) {
+                noteEl.style.display = cycle === 'yearly' ? 'block' : 'none';
+            }
         }
     }
 </script>

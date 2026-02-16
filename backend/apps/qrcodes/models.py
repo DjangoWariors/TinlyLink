@@ -523,6 +523,7 @@ class QRCode(models.Model):
         import ipaddress
         import socket
         from urllib.parse import urlparse
+        from django.conf import settings
         from django.core.exceptions import ValidationError
 
         parsed = urlparse(url)
@@ -534,6 +535,10 @@ class QRCode(models.Model):
         hostname = parsed.hostname
         if not hostname:
             raise ValidationError("Invalid logo URL.")
+
+        # In DEBUG mode, allow localhost/private URLs (e.g. media served by dev server)
+        if settings.DEBUG:
+            return
 
         # Resolve hostname to IP and check against private/reserved ranges
         try:
@@ -614,15 +619,10 @@ class QRCode(models.Model):
         if settings.DEBUG:
             return f"{settings.MEDIA_URL}{path}"
         
-        # Generate signed S3 URL
-        import boto3
-        from botocore.config import Config
-        
-        s3_client = boto3.client(
-            "s3",
-            config=Config(signature_version="s3v4"),
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+        # Generate signed S3/R2 URL
+        from apps.common.storage import get_s3_client
+
+        s3_client = get_s3_client()
         
         url = s3_client.generate_presigned_url(
             "get_object",

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, QrCode } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, QrCode, Shield, Eye, Loader2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
-import { qrCodesAPI } from '@/services/api';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/common/Card';
+import { Badge } from '@/components/common';
+import { qrCodesAPI, linksAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQRDesign } from '@/hooks/useQRDesign';
-import { QRTypeSelector, QRContentForm, QRDesignPanel, QRPreviewPanel } from './qr/components';
+import { QRTypeSelector, QR_TYPES, QRContentForm, QRDesignPanel, QRPreviewPanel } from './qr/components';
 import toast from 'react-hot-toast';
-import type { QRType, QRContentData, Link as LinkType } from '@/types';
+import type { QRType, QRContentData } from '@/types';
 
 export function CreateQRCodePage() {
     const navigate = useNavigate();
@@ -36,12 +38,25 @@ export function CreateQRCodePage() {
     const [serverPreviewUrl, setServerPreviewUrl] = useState<string | null>(null);
     const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
+    // Fetch links to get short_url for preview
+    const { data: linksData } = useQuery({
+        queryKey: ['linksForQRPreview', selectedLinkId],
+        queryFn: () => linksAPI.getLink(selectedLinkId),
+        enabled: qrType === 'link' && !!selectedLinkId,
+    });
+
     const createMutation = useMutation({
         mutationFn: (formData: FormData) => qrCodesAPI.createQRCodeWithLogo(formData),
-        onSuccess: () => {
+        onSuccess: (data: any) => {
             queryClient.invalidateQueries({ queryKey: ['qrCodes'] });
-            toast.success('QR code created!', { id: 'qr-create' });
-            navigate('/dashboard/qr-codes');
+            toast.success('QR code created! You can now add Smart Rules.', { id: 'qr-create' });
+            // Redirect to edit page so user can immediately add rules
+            const newId = data?.id;
+            if (newId) {
+                navigate(`/dashboard/qr-codes/${newId}/edit`);
+            } else {
+                navigate('/dashboard/qr-codes');
+            }
         },
         onError: (error: any) => {
             const message = error.response?.data?.detail || error.response?.data?.error ||
@@ -52,7 +67,7 @@ export function CreateQRCodePage() {
 
     const handleServerPreview = async () => {
         if (qrType !== 'link' || !selectedLinkId) {
-            toast.error('Server preview only available for link-type QR codes with a selected link', { id: 'qr-preview' });
+            toast.error('Server preview requires a selected link', { id: 'qr-preview' });
             return;
         }
         setIsPreviewLoading(true);
@@ -152,7 +167,9 @@ export function CreateQRCodePage() {
     const getPreviewValue = (): string => {
         const d = contentData as any;
         switch (qrType) {
-            case 'link': return 'https://example.com';
+            case 'link':
+                // Use the selected link's short_url for a realistic preview
+                return linksData?.short_url || (selectedLinkId ? 'Loading...' : 'Select a link');
             case 'vcard': return `BEGIN:VCARD\nFN:${d.name || 'Name'}\nEND:VCARD`;
             case 'wifi': return `WIFI:T:WPA;S:${d.ssid || 'Network'};;`;
             case 'email': return `mailto:${d.email || 'email@example.com'}`;
@@ -173,6 +190,8 @@ export function CreateQRCodePage() {
             default: return 'Preview';
         }
     };
+
+    const selectedTypeLabel = QR_TYPES.find(t => t.type === qrType)?.label;
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
@@ -197,7 +216,7 @@ export function CreateQRCodePage() {
                 <div className="lg:col-span-3 space-y-6">
                     <QRTypeSelector
                         value={qrType}
-                        onChange={(type) => { setQrType(type); setContentData({}); }}
+                        onChange={(type) => { setQrType(type); setContentData({}); setSelectedLinkId(''); }}
                         isPaidPlan={isPaidPlan}
                         showUpgradeToast={showUpgradeToast}
                     />
@@ -216,6 +235,28 @@ export function CreateQRCodePage() {
                         design={design} actions={designActions}
                         isPaidPlan={isPaidPlan} showUpgradeToast={showUpgradeToast}
                     />
+
+                    {/* Smart Rules — available after creation */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Shield className="w-5 h-5" /> Smart Rules
+                            </CardTitle>
+                            <CardDescription>
+                                Redirect users based on device, location, time, or language
+                            </CardDescription>
+                        </CardHeader>
+                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                            <p className="text-sm text-blue-700">
+                                Smart Rules can be configured after creating the QR code. You&apos;ll be redirected to the edit page where you can add rules immediately.
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {['Device targeting', 'Geo-redirect', 'Time-based', 'A/B testing', 'Language'].map(rule => (
+                                    <Badge key={rule} variant="primary" className="text-xs">{rule}</Badge>
+                                ))}
+                            </div>
+                        </div>
+                    </Card>
                 </div>
 
                 {/* Right Panel - Preview */}
@@ -223,11 +264,36 @@ export function CreateQRCodePage() {
                     <QRPreviewPanel
                         value={getPreviewValue()}
                         design={design}
-                        typeLabel={undefined}
+                        typeLabel={selectedTypeLabel}
+                        downloadFilename={`qr-${title || qrType}`}
                         primaryAction={
                             <Button onClick={handleCreate} isLoading={createMutation.isPending} className="w-full">
                                 <QrCode className="w-4 h-4 mr-2" /> Create QR Code
                             </Button>
+                        }
+                        extraContent={
+                            qrType === 'link' && selectedLinkId ? (
+                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleServerPreview}
+                                        disabled={isPreviewLoading}
+                                        className="w-full"
+                                    >
+                                        {isPreviewLoading ? (
+                                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                                        ) : (
+                                            <><Eye className="w-4 h-4 mr-2" /> Server Preview</>
+                                        )}
+                                    </Button>
+                                    {serverPreviewUrl && (
+                                        <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+                                            <img src={serverPreviewUrl} alt="Server preview" className="w-full" />
+                                        </div>
+                                    )}
+                                </div>
+                            ) : undefined
                         }
                     />
                 </div>

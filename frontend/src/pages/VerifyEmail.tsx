@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router';
 import { CheckCircle, XCircle, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
+import { SEO } from '@/components/common/SEO';
 import { authAPI } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -16,6 +17,14 @@ export function VerifyEmailPage() {
   
   const [state, setState] = useState<VerificationState>(token ? 'loading' : 'resend');
   const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Cooldown timer for resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     if (token) {
@@ -40,12 +49,18 @@ export function VerifyEmailPage() {
   };
 
   const handleResend = async () => {
+    if (resendCooldown > 0) return;
     setIsResending(true);
     try {
       await authAPI.resendVerification();
       toast.success('Verification email sent!');
+      setResendCooldown(60);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to send verification email');
+      if (!error.response) {
+        toast.error('Network error. Please check your connection.');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to send verification email.');
+      }
     } finally {
       setIsResending(false);
     }
@@ -55,6 +70,7 @@ export function VerifyEmailPage() {
   if (state === 'loading') {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <SEO title="Verifying Email - TinlyLink" description="Verifying your email address." />
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-6 shadow-md rounded-xl border border-gray-200 text-center">
             <div className="mx-auto w-12 h-12 flex items-center justify-center mb-4">
@@ -70,10 +86,19 @@ export function VerifyEmailPage() {
     );
   }
 
+  // Auto-redirect to dashboard after successful verification
+  useEffect(() => {
+    if (state === 'success' && isAuthenticated) {
+      const timer = setTimeout(() => navigate('/dashboard'), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [state, isAuthenticated, navigate]);
+
   // Success state
   if (state === 'success') {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <SEO title="Email Verified - TinlyLink" description="Your email has been successfully verified." />
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-6 shadow-md rounded-xl border border-gray-200 text-center">
             <div className="mx-auto w-12 h-12 bg-success-bg rounded-full flex items-center justify-center mb-4">
@@ -84,11 +109,14 @@ export function VerifyEmailPage() {
               Your email has been successfully verified. You now have full access to your account.
             </p>
             {isAuthenticated ? (
-              <Link to="/dashboard">
-                <Button className="w-full">
-                  Go to Dashboard
-                </Button>
-              </Link>
+              <>
+                <p className="text-xs text-gray-500 mb-4">Redirecting to dashboard in a moment...</p>
+                <Link to="/dashboard">
+                  <Button className="w-full">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              </>
             ) : (
               <Link to="/login">
                 <Button className="w-full">
@@ -117,12 +145,13 @@ export function VerifyEmailPage() {
             </p>
             <div className="space-y-3">
               {isAuthenticated ? (
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleResend}
                   isLoading={isResending}
+                  disabled={resendCooldown > 0}
                 >
-                  Resend verification email
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend verification email'}
                 </Button>
               ) : (
                 <Link to="/login">
@@ -146,6 +175,7 @@ export function VerifyEmailPage() {
   // Resend state (no token, user needs to request verification)
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO title="Verify Email - TinlyLink" description="Verify your email address to complete registration." />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <Link to="/" className="flex justify-center">
@@ -169,12 +199,13 @@ export function VerifyEmailPage() {
                 Click the link in the email to verify your account.
               </p>
               <div className="space-y-3">
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   onClick={handleResend}
                   isLoading={isResending}
+                  disabled={resendCooldown > 0}
                 >
-                  Resend verification email
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend verification email'}
                 </Button>
                 <Link to="/dashboard">
                   <Button variant="ghost" className="w-full">

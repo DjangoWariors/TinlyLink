@@ -20,6 +20,7 @@ def _validate_url(url: str):
     import ipaddress
     import socket
     from urllib.parse import urlparse
+    from django.conf import settings
     from django.core.exceptions import ValidationError
 
     parsed = urlparse(url)
@@ -29,6 +30,10 @@ def _validate_url(url: str):
     hostname = parsed.hostname
     if not hostname:
         raise ValidationError("Invalid logo URL.")
+
+    # In DEBUG mode, allow localhost/private URLs (e.g. media served by dev server)
+    if settings.DEBUG:
+        return
 
     try:
         addrinfo = socket.getaddrinfo(hostname, None, proto=socket.IPPROTO_TCP)

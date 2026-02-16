@@ -13,6 +13,9 @@ import {
   X,
   GitBranch,
   Package,
+  Target,
+  LayoutList,
+  FileText,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProgressBar } from '@/components/common';
@@ -37,6 +40,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { href: '/dashboard/utm-builder', icon: Zap, label: 'UTM Builder' },
     { href: '/dashboard/campaigns', icon: FolderKanban, label: 'Campaigns' },
     { href: '/dashboard/rules', icon: GitBranch, label: 'Smart Rules' },
+    { href: '/dashboard/pixels', icon: Target, label: 'Pixels' },
+    { href: '/dashboard/bio', icon: LayoutList, label: 'Bio Pages' },
+    { href: '/dashboard/pages', icon: FileText, label: 'Landing Pages' },
     { href: '/dashboard/serial-batches', icon: Package, label: 'Serial Batches' },
     { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
   ];

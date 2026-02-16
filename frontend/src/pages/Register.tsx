@@ -14,7 +14,14 @@ import toast from 'react-hot-toast';
 const registerSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Must contain at least one number'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -23,6 +30,7 @@ export function RegisterPage() {
   const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   const {
     register,
@@ -35,13 +43,16 @@ export function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      await registerUser(data);
-      toast.success('Account created successfully!');
+      await registerUser({ full_name: data.full_name, email: data.email, password: data.password });
+      toast.success('Account created! Please check your email to verify.');
     } catch (error: any) {
-      const message = error.response?.data?.error ||
-        error.response?.data?.errors?.email ||
-        'Registration failed. Please try again.';
-      toast.error(message);
+      if (!error.response) {
+        toast.error('Network error. Please check your connection.');
+      } else if (error.response.status === 409 || error.response?.data?.errors?.email) {
+        toast.error('An account with this email already exists.');
+      } else {
+        toast.error(error.response?.data?.error || 'Registration failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +106,8 @@ export function RegisterPage() {
                 label="Full name"
                 type="text"
                 placeholder="John Doe"
+                autoFocus
+                disabled={isLoading}
                 leftIcon={<User className="w-4 h-4" />}
                 error={errors.full_name?.message}
                 {...register('full_name')}
@@ -103,6 +116,7 @@ export function RegisterPage() {
                 label="Email"
                 type="email"
                 placeholder="you@example.com"
+                disabled={isLoading}
                 leftIcon={<Mail className="w-4 h-4" />}
                 error={errors.email?.message}
                 {...register('email')}
@@ -111,7 +125,8 @@ export function RegisterPage() {
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                hint="At least 8 characters"
+                hint="At least 8 characters, one uppercase letter, one number"
+                disabled={isLoading}
                 leftIcon={<Lock className="w-4 h-4" />}
                 rightIcon={
                   <button
@@ -125,6 +140,25 @@ export function RegisterPage() {
                 }
                 error={errors.password?.message}
                 {...register('password')}
+              />
+              <Input
+                label="Confirm password"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                disabled={isLoading}
+                leftIcon={<Lock className="w-4 h-4" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
+                error={errors.confirmPassword?.message}
+                {...register('confirmPassword')}
               />
 
               <Button type="submit" className="w-full" isLoading={isLoading}>

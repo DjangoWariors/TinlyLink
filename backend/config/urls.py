@@ -10,6 +10,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+from apps.biolinks.urls import bio_urlpatterns, pages_urlpatterns
+from apps.biolinks.views import PublicBioPageView, PublicLandingPageView, PublicFormSubmitView
 from apps.public.views import VerifyAPIView
 from apps.qrcodes.views import DynamicQRRedirectView
 from config.health import HealthCheckView, ReadinessCheckView, LivenessCheckView, MetricsView
@@ -34,6 +36,8 @@ urlpatterns = [
     path("api/v1/billing/", include("apps.billing.urls")),
     path("api/v1/teams/", include("apps.teams.urls")),
     path("api/v1/rules/", include("apps.rules.urls")),
+    path("api/v1/bio/", include((bio_urlpatterns, "bio"))),
+    path("api/v1/pages/", include((pages_urlpatterns, "pages"))),
 
     # Public API under v1 (no auth required)
     path("api/v1/verify/", VerifyAPIView.as_view(), name="verify_api_v1"),
@@ -57,6 +61,11 @@ urlpatterns = [
     
     # Dynamic QR redirect
     path("q/<str:short_code>", DynamicQRRedirectView.as_view(), name="dynamic_qr_redirect"),
+
+    # Public bio pages and landing pages (before catch-all redirect)
+    path("@<slug:slug>", PublicBioPageView.as_view(), name="public_bio_page"),
+    path("p/<slug:slug>", PublicLandingPageView.as_view(), name="public_landing_page"),
+    path("p/<slug:slug>/submit", PublicFormSubmitView.as_view(), name="public_form_submit"),
 
     # Redirect handler - must be last (catches short codes)
     path("", include("apps.links.urls_redirect")),

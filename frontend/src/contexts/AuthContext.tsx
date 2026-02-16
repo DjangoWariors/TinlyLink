@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { authAPI, setTokens, clearTokens, getAccessToken, onAuthLogout } from '@/services/api';
 import toast from 'react-hot-toast';
@@ -36,7 +36,19 @@ const defaultSubscription: Subscription = {
     password_protection: false,
     show_ads: true,
     team_members: 0,
+    serial_batch_limit: 0,
+    priority_support: false,
+    sso: false,
   },
+};
+
+// Default usage for new/unloaded users
+const defaultUsage: Usage = {
+  period_start: '',
+  period_end: '',
+  links_created: 0,
+  qr_codes_created: 0,
+  api_calls: 0,
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -47,15 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
-
-  // Default usage for new users
-  const defaultUsage: Usage = {
-    period_start: new Date().toISOString(),
-    period_end: new Date().toISOString(),
-    links_created: 0,
-    qr_codes_created: 0,
-    api_calls: 0,
-  };
 
   // Clear auth state helper
   const clearAuthState = useCallback(() => {
@@ -118,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(response.user);
     setSubscription(response.subscription || defaultSubscription);
     setUsage(defaultUsage);
-    navigate('/dashboard');
+    navigate('/verify-email');
   }, [navigate]);
 
   const logout = useCallback(async () => {

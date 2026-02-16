@@ -39,6 +39,12 @@ import { SerialBatchesPage } from '@/pages/SerialBatches';
 import { CreateSerialBatchPage } from '@/pages/CreateSerialBatch';
 import { SerialBatchDetailPage } from '@/pages/SerialBatchDetail';
 import { VerifyPage } from '@/pages/Verify';
+import { PixelsPage } from '@/pages/Pixels';
+import { BioPagesPage } from '@/pages/BioPages';
+import { BioPageEditorPage } from '@/pages/BioPageEditor';
+import { LandingPagesPage } from '@/pages/LandingPages';
+import { LandingPageBuilderPage } from '@/pages/LandingPageBuilder';
+import { TemplateGalleryPage } from '@/pages/TemplateGallery';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -135,6 +141,14 @@ function AppRoutes() {
         <Route path="serial-batches" element={<SerialBatchesPage />} />
         <Route path="serial-batches/new" element={<CreateSerialBatchPage />} />
         <Route path="serial-batches/:id" element={<SerialBatchDetailPage />} />
+        <Route path="pixels" element={<PixelsPage />} />
+        <Route path="bio" element={<BioPagesPage />} />
+        <Route path="bio/new" element={<BioPageEditorPage />} />
+        <Route path="bio/:id/edit" element={<BioPageEditorPage />} />
+        <Route path="pages" element={<LandingPagesPage />} />
+        <Route path="pages/new" element={<LandingPageBuilderPage />} />
+        <Route path="pages/templates" element={<TemplateGalleryPage />} />
+        <Route path="pages/:id/edit" element={<LandingPageBuilderPage />} />
         <Route path="utm-builder" element={<UTMBuilderPage />} />
         <Route path="domains" element={<CustomDomainsPage />} />
         <Route path="api-keys" element={<APIKeysPage />} />

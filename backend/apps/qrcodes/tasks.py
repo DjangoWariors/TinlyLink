@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 _BULK_CHUNK_SIZE = 50
 
 
-@shared_task(queue="analytics")
-def track_qr_scan(scan_data):
+@shared_task(bind=True, queue="analytics", max_retries=3, default_retry_delay=30)
+def track_qr_scan(self, scan_data):
     """
     Process and store QR scan event using unified ClickEvent model.
     Called asynchronously after QR code redirect.
@@ -176,6 +176,7 @@ def track_qr_scan(scan_data):
 
     except Exception as e:
         logger.exception(f"Failed to track QR scan: {e}")
+        raise self.retry(exc=e)
 
 
 def _sadd(key: str, value: str) -> bool:
@@ -249,13 +250,10 @@ def save_to_storage(path, content, content_type):
         full_path.parent.mkdir(parents=True, exist_ok=True)
         full_path.write_bytes(content if isinstance(content, bytes) else content.encode())
     else:
-        # Save to S3
-        import boto3
-        
-        s3_client = boto3.client(
-            "s3",
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+        # Save to S3/R2
+        from apps.common.storage import get_s3_client
+
+        s3_client = get_s3_client()
         
         s3_client.put_object(
             Bucket=settings.AWS_STORAGE_BUCKET_NAME,
@@ -293,13 +291,10 @@ def cleanup_orphaned_qr_files():
     if settings.DEBUG:
         return "Skipped in debug mode"
     
-    import boto3
+    from apps.common.storage import get_s3_client
     from .models import QRCode
-    
-    s3_client = boto3.client(
-        "s3",
-        region_name=settings.AWS_S3_REGION_NAME,
-    )
+
+    s3_client = get_s3_client()
     
     # List all QR code files
     paginator = s3_client.get_paginator("list_objects_v2")
@@ -514,8 +509,8 @@ def generate_serial_batch(self, batch_id):
                 full_path.write_bytes(f.read())
             export_url = f"{settings.MEDIA_URL}{zip_filename}"
         else:
-            import boto3
-            s3_client = boto3.client("s3", region_name=settings.AWS_S3_REGION_NAME)
+            from apps.common.storage import get_s3_client
+            s3_client = get_s3_client()
             with open(zip_tmp.name, "rb") as f:
                 s3_client.put_object(
                     Bucket=settings.AWS_STORAGE_BUCKET_NAME,
@@ -624,13 +619,10 @@ def cleanup_expired_batch_exports():
                     full_path.unlink()
                     logger.info(f"Deleted export file for batch {batch.id}")
     else:
-        # S3 cleanup
-        import boto3
+        # S3/R2 cleanup
+        from apps.common.storage import get_s3_client
 
-        s3_client = boto3.client(
-            "s3",
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+        s3_client = get_s3_client()
 
         for batch in old_batches:
             try:

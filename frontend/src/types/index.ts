@@ -24,6 +24,23 @@ export interface PlanLimits {
   password_protection: boolean;
   show_ads: boolean;
   team_members: number;
+  serial_batch_limit: number;
+  priority_support: boolean;
+  sso: boolean;
+}
+
+export interface Plan {
+  slug: string;
+  name: string;
+  description: string;
+  is_coming_soon: boolean;
+  is_popular: boolean;
+  badge_text: string;
+  cta_text: string;
+  features: string[];
+  monthly_price: number;  // cents
+  yearly_price: number;   // cents
+  limits: PlanLimits;
 }
 
 export interface Subscription {
@@ -1157,5 +1174,248 @@ export interface VerificationResult {
     website?: string;
   };
   support_url?: string;
+}
+
+// =============================================================================
+// A/B TESTING TYPES - Matches backend campaigns/serializers.py
+// =============================================================================
+
+export interface Variant {
+  id: string;
+  name: string;
+  destination_url: string;
+  weight: number;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  click_rate: number;
+  conversion_rate: number;
+  is_control: boolean;
+  is_winner: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface CreateVariantData {
+  name: string;
+  destination_url: string;
+  weight?: number;
+  is_control?: boolean;
+}
+
+export interface UpdateVariantData {
+  name?: string;
+  destination_url?: string;
+  weight?: number;
+  is_active?: boolean;
+}
+
+export interface VariantStats {
+  id: string;
+  name: string;
+  weight: number;
+  impressions: number;
+  clicks: number;
+  click_rate: number;
+  conversions: number;
+  conversion_rate: number;
+  is_control: boolean;
+  is_winner: boolean;
+  lift: number | null;
+  significance: number | null;
+}
+
+// =============================================================================
+// RETARGETING PIXEL TYPES - Matches backend links/serializers.py
+// =============================================================================
+
+export type PixelPlatform =
+  | 'facebook' | 'google' | 'tiktok' | 'twitter'
+  | 'linkedin' | 'snapchat' | 'pinterest' | 'custom';
+
+export interface RetargetingPixel {
+  id: string;
+  name: string;
+  platform: PixelPlatform;
+  pixel_id: string;
+  custom_script: string;
+  is_active: boolean;
+  links_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePixelData {
+  name: string;
+  platform: PixelPlatform;
+  pixel_id: string;
+  custom_script?: string;
+}
+
+export interface UpdatePixelData {
+  name?: string;
+  pixel_id?: string;
+  custom_script?: string;
+  is_active?: boolean;
+}
+
+// =============================================================================
+// BIO PAGE TYPES - Matches backend biolinks/serializers.py
+// =============================================================================
+
+export type BioPageTheme = 'minimal' | 'dark' | 'colorful' | 'gradient' | 'professional';
+export type ButtonStyle = 'rounded' | 'square' | 'pill' | 'outline';
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+export interface BioPage {
+  id: string;
+  slug: string;
+  title: string;
+  bio: string;
+  avatar_url: string;
+  theme: BioPageTheme;
+  background_color: string;
+  text_color: string;
+  button_color: string;
+  button_text_color: string;
+  button_style: ButtonStyle;
+  social_links: SocialLink[];
+  seo_title: string;
+  seo_description: string;
+  is_published: boolean;
+  total_views: number;
+  links_count: number;
+  public_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBioPageData {
+  slug: string;
+  title: string;
+  bio?: string;
+  avatar_url?: string;
+  theme?: BioPageTheme;
+  background_color?: string;
+  text_color?: string;
+  button_color?: string;
+  button_text_color?: string;
+  button_style?: ButtonStyle;
+  social_links?: SocialLink[];
+  seo_title?: string;
+  seo_description?: string;
+}
+
+export interface UpdateBioPageData extends Partial<CreateBioPageData> {
+  is_published?: boolean;
+}
+
+export interface BioLink {
+  id: string;
+  bio_page: string;
+  link: string | null;
+  link_short_url: string | null;
+  custom_url: string;
+  title: string;
+  description: string;
+  icon: string;
+  thumbnail_url: string;
+  position: number;
+  is_active: boolean;
+  total_clicks: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateBioLinkData {
+  link_id?: string;
+  custom_url?: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  thumbnail_url?: string;
+}
+
+export interface UpdateBioLinkData {
+  title?: string;
+  description?: string;
+  icon?: string;
+  thumbnail_url?: string;
+  custom_url?: string;
+  is_active?: boolean;
+}
+
+// =============================================================================
+// LANDING PAGE TYPES - Matches backend biolinks/serializers.py
+// =============================================================================
+
+export type LandingBlockType = 'hero' | 'text' | 'image' | 'cta' | 'form';
+
+export interface LandingPageBlock {
+  id: string;
+  type: LandingBlockType;
+  content: Record<string, unknown>;
+  settings: Record<string, unknown>;
+}
+
+export interface LandingPage {
+  id: string;
+  slug: string;
+  title: string;
+  blocks: LandingPageBlock[];
+  settings: Record<string, unknown>;
+  seo_title: string;
+  seo_description: string;
+  og_image_url: string;
+  template: string | null;
+  is_published: boolean;
+  total_views: number;
+  total_conversions: number;
+  public_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateLandingPageData {
+  slug: string;
+  title: string;
+  blocks?: LandingPageBlock[];
+  settings?: Record<string, unknown>;
+  template_id?: string;
+  seo_title?: string;
+  seo_description?: string;
+}
+
+export interface UpdateLandingPageData {
+  title?: string;
+  slug?: string;
+  blocks?: LandingPageBlock[];
+  settings?: Record<string, unknown>;
+  seo_title?: string;
+  seo_description?: string;
+  og_image_url?: string;
+  is_published?: boolean;
+}
+
+export interface LandingPageTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  thumbnail_url: string;
+  blocks: LandingPageBlock[];
+  settings: Record<string, unknown>;
+}
+
+export interface FormSubmission {
+  id: string;
+  landing_page: string;
+  block_id: string;
+  data: Record<string, unknown>;
+  submitted_at: string;
 }
 

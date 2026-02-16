@@ -37,6 +37,7 @@ import type {
   APIKey,
   CreateAPIKeyData,
   APIKeyResponse,
+  Plan,
   BillingInfo,
   CheckoutResponse,
   PortalResponse,
@@ -72,6 +73,28 @@ import type {
   SerialCode,
   SerialCodeStats,
   VerificationResult,
+  // A/B Testing types
+  Variant,
+  CreateVariantData,
+  UpdateVariantData,
+  VariantStats,
+  // Pixel types
+  RetargetingPixel,
+  CreatePixelData,
+  UpdatePixelData,
+  // Bio page types
+  BioPage,
+  CreateBioPageData,
+  UpdateBioPageData,
+  BioLink,
+  CreateBioLinkData,
+  UpdateBioLinkData,
+  // Landing page types
+  LandingPage,
+  CreateLandingPageData,
+  UpdateLandingPageData,
+  LandingPageTemplate,
+  FormSubmission,
 } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
@@ -79,6 +102,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -153,7 +177,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle token refresh
+// Response interceptor - handle token refresh with request queuing
+// Prevents race conditions when multiple 401s arrive concurrently
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (err: unknown) => void }[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (token) {
+      resolve(token);
+    } else {
+      reject(error);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -162,8 +201,22 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // If already refreshing, queue this request to retry after refresh completes
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token: string) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(api(originalRequest));
+            },
+            reject,
+          });
+        });
+      }
+
       const refreshToken = getRefreshToken();
       if (refreshToken) {
+        isRefreshing = true;
         try {
           const response = await axios.post<RefreshResponse>(`${API_URL}/auth/refresh/`, {
             refresh_token: refreshToken,
@@ -171,14 +224,17 @@ api.interceptors.response.use(
 
           const { access_token, refresh_token } = response.data;
           setTokens(access_token, refresh_token);
+          processQueue(null, access_token);
 
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return api(originalRequest);
         } catch (refreshError) {
+          processQueue(refreshError, null);
           clearTokens();
-          // Emit event so AuthContext can clear state before redirect
           emitAuthLogout();
           return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
         }
       }
     }
@@ -773,6 +829,7 @@ export const qrCodesAPI = {
     page_size?: number;
     search?: string;
     style?: string;
+    qr_type?: string;
   }): Promise<PaginatedResponse<QRCode>> => {
     const response = await api.get<PaginatedResponse<QRCode>>('/qr-codes/', { params });
     return response.data;
@@ -1161,6 +1218,16 @@ export const analyticsAPI = {
 // =============================================================================
 
 export const billingAPI = {
+  /**
+   * Get available plans (public)
+   * GET /billing/plans/
+   * Returns: Plan[]
+   */
+  getPlans: async (): Promise<Plan[]> => {
+    const response = await api.get<Plan[]>('/billing/plans/');
+    return response.data;
+  },
+
   /**
    * Get billing overview
    * GET /billing/
@@ -1667,6 +1734,185 @@ export const serialAPI = {
       const response = await api.patch<SerialCode>(`/qr-codes/serial-codes/${codeId}/status/`, { status: 'blocked', reason: 'Revoked by user' });
       return response.data;
     },
+  },
+};
+
+// =============================================================================
+// VARIANTS API - A/B Testing (under campaigns)
+// =============================================================================
+
+export const variantsAPI = {
+  list: async (linkId: string): Promise<Variant[]> => {
+    const response = await api.get<Variant[]>(`/campaigns/links/${linkId}/variants/`);
+    return response.data;
+  },
+
+  create: async (linkId: string, data: CreateVariantData): Promise<Variant> => {
+    const response = await api.post<Variant>(`/campaigns/links/${linkId}/variants/`, data);
+    return response.data;
+  },
+
+  update: async (variantId: string, data: UpdateVariantData): Promise<Variant> => {
+    const response = await api.patch<Variant>(`/campaigns/variants/${variantId}/`, data);
+    return response.data;
+  },
+
+  delete: async (variantId: string): Promise<void> => {
+    await api.delete(`/campaigns/variants/${variantId}/`);
+  },
+
+  setWinner: async (variantId: string): Promise<Variant> => {
+    const response = await api.post<Variant>(`/campaigns/variants/${variantId}/set-winner/`);
+    return response.data;
+  },
+
+  getStats: async (linkId: string): Promise<VariantStats[]> => {
+    const response = await api.get<{ variants: VariantStats[] }>(`/campaigns/links/${linkId}/variants/stats/`);
+    return response.data.variants;
+  },
+};
+
+// =============================================================================
+// PIXELS API - Retargeting pixels
+// =============================================================================
+
+export const pixelsAPI = {
+  list: async (): Promise<RetargetingPixel[]> => {
+    const response = await api.get<RetargetingPixel[]>('/links/pixels/');
+    return response.data;
+  },
+
+  get: async (id: string): Promise<RetargetingPixel> => {
+    const response = await api.get<RetargetingPixel>(`/links/pixels/${id}/`);
+    return response.data;
+  },
+
+  create: async (data: CreatePixelData): Promise<RetargetingPixel> => {
+    const response = await api.post<RetargetingPixel>('/links/pixels/', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: UpdatePixelData): Promise<RetargetingPixel> => {
+    const response = await api.patch<RetargetingPixel>(`/links/pixels/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/links/pixels/${id}/`);
+  },
+};
+
+// =============================================================================
+// BIO PAGES API - Link-in-bio
+// =============================================================================
+
+export const bioAPI = {
+  list: async (): Promise<BioPage[]> => {
+    const response = await api.get<BioPage[]>('/bio/');
+    return response.data;
+  },
+
+  get: async (id: string): Promise<BioPage> => {
+    const response = await api.get<BioPage>(`/bio/${id}/`);
+    return response.data;
+  },
+
+  create: async (data: CreateBioPageData): Promise<BioPage> => {
+    const response = await api.post<BioPage>('/bio/', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: UpdateBioPageData): Promise<BioPage> => {
+    const response = await api.patch<BioPage>(`/bio/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/bio/${id}/`);
+  },
+
+  checkSlug: async (slug: string): Promise<{ available: boolean }> => {
+    const response = await api.get<{ available: boolean }>('/bio/check-slug/', { params: { slug } });
+    return response.data;
+  },
+
+  // Bio Links
+  listLinks: async (bioPageId: string): Promise<BioLink[]> => {
+    const response = await api.get<BioLink[]>(`/bio/${bioPageId}/links/`);
+    return response.data;
+  },
+
+  createLink: async (bioPageId: string, data: CreateBioLinkData): Promise<BioLink> => {
+    const response = await api.post<BioLink>(`/bio/${bioPageId}/links/`, data);
+    return response.data;
+  },
+
+  updateLink: async (linkId: string, data: UpdateBioLinkData): Promise<BioLink> => {
+    const response = await api.patch<BioLink>(`/bio/links/${linkId}/`, data);
+    return response.data;
+  },
+
+  deleteLink: async (linkId: string): Promise<void> => {
+    await api.delete(`/bio/links/${linkId}/`);
+  },
+
+  reorderLinks: async (bioPageId: string, linkIds: string[]): Promise<void> => {
+    await api.post(`/bio/${bioPageId}/links/reorder/`, { link_ids: linkIds });
+  },
+};
+
+// =============================================================================
+// LANDING PAGES API - Page builder
+// =============================================================================
+
+export const pagesAPI = {
+  list: async (): Promise<LandingPage[]> => {
+    const response = await api.get<LandingPage[]>('/pages/');
+    return response.data;
+  },
+
+  get: async (id: string): Promise<LandingPage> => {
+    const response = await api.get<LandingPage>(`/pages/${id}/`);
+    return response.data;
+  },
+
+  create: async (data: CreateLandingPageData): Promise<LandingPage> => {
+    const response = await api.post<LandingPage>('/pages/', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: UpdateLandingPageData): Promise<LandingPage> => {
+    const response = await api.patch<LandingPage>(`/pages/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/pages/${id}/`);
+  },
+
+  publish: async (id: string): Promise<LandingPage> => {
+    const response = await api.post<LandingPage>(`/pages/${id}/publish/`);
+    return response.data;
+  },
+
+  duplicate: async (id: string): Promise<LandingPage> => {
+    const response = await api.post<LandingPage>(`/pages/${id}/duplicate/`);
+    return response.data;
+  },
+
+  getTemplates: async (): Promise<LandingPageTemplate[]> => {
+    const response = await api.get<LandingPageTemplate[]>('/pages/templates/');
+    return response.data;
+  },
+
+  getSubmissions: async (id: string): Promise<FormSubmission[]> => {
+    const response = await api.get<FormSubmission[]>(`/pages/${id}/submissions/`);
+    return response.data;
+  },
+
+  exportSubmissions: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/pages/${id}/submissions/export/`, { responseType: 'blob' });
+    return response.data;
   },
 };
 

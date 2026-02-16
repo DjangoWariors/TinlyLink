@@ -68,6 +68,11 @@ class RedirectView(View):
         # Track click asynchronously
         self._track_click(request, link_data, variant_id)
 
+        # Check for retargeting pixels
+        pixel_response = self._render_pixel_redirect(request, link_data, destination)
+        if pixel_response:
+            return pixel_response
+
         # Check if ads should be shown
         if link_data.get("show_ads", True):
             return self._render_interstitial(request, {**link_data, "destination_url": destination})
@@ -107,6 +112,11 @@ class RedirectView(View):
 
                 # Track click
                 self._track_click(request, link_data, variant_id)
+
+                # Check pixels
+                pixel_response = self._render_pixel_redirect(request, link_data, destination)
+                if pixel_response:
+                    return pixel_response
 
                 # Check ads
                 if link_data.get("show_ads", True):
@@ -284,6 +294,28 @@ class RedirectView(View):
             "error": error,
         })
     
+    def _render_pixel_redirect(self, request, link_data, destination):
+        """
+        If the link has active retargeting pixels, render a lightweight
+        interstitial that fires pixel scripts then redirects via JS.
+        Returns None if no pixels are attached.
+        """
+        from .models import Link
+
+        try:
+            link = Link.objects.get(id=link_data["id"])
+        except Link.DoesNotExist:
+            return None
+
+        pixels = list(link.pixels.filter(is_active=True))
+        if not pixels:
+            return None
+
+        return render(request, "links/pixel_redirect.html", {
+            "destination_url": destination,
+            "pixels": pixels,
+        })
+
     def _render_interstitial(self, request, link_data):
         """Render interstitial page with ad."""
         return render(request, "links/interstitial.html", {

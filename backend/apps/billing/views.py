@@ -18,7 +18,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_spectacular.utils import extend_schema
 
+from django.db import models as db_models
 from apps.users.models import Subscription
+from .models import Plan
 
 logger = logging.getLogger(__name__)
 
@@ -98,17 +100,22 @@ class CreateCheckoutSessionView(APIView):
     
     @extend_schema(tags=["Billing"])
     def post(self, request):
-        plan = request.data.get("plan")
-        
-        if plan not in ("pro", "business", "enterprise"):
+        plan_slug = request.data.get("plan")
+
+        # Validate plan exists and is subscribable
+        plan_obj = Plan.objects.filter(
+            slug=plan_slug, is_enabled=True, is_coming_soon=False
+        ).exclude(slug="free").first()
+
+        if not plan_obj:
             return Response(
                 {"error": "Invalid plan"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         user = request.user
         subscription = getattr(user, "subscription", None)
-        
+
         # Get or create Stripe customer
         if subscription and subscription.stripe_customer_id:
             customer_id = subscription.stripe_customer_id
@@ -119,14 +126,16 @@ class CreateCheckoutSessionView(APIView):
                 metadata={"user_id": str(user.id)},
             )
             customer_id = customer.id
-            
+
             if subscription:
                 subscription.stripe_customer_id = customer_id
                 subscription.save(update_fields=["stripe_customer_id"])
-        
-        # Get price ID from settings
-        price_id = settings.STRIPE_PRODUCTS.get(plan, {}).get("price_id")
-        
+
+        # Get price ID from Plan model, fallback to settings
+        price_id = plan_obj.stripe_monthly_price_id
+        if not price_id:
+            price_id = settings.STRIPE_PRODUCTS.get(plan_slug, {}).get("price_id")
+
         if not price_id:
             return Response(
                 {"error": "Plan not configured"},
@@ -147,7 +156,7 @@ class CreateCheckoutSessionView(APIView):
                 cancel_url=f"{settings.FRONTEND_URL}/dashboard/settings/billing?canceled=true",
                 metadata={
                     "user_id": str(user.id),
-                    "plan": plan,
+                    "plan": plan_slug,
                 },
             )
             
@@ -314,17 +323,25 @@ class StripeWebhookView(APIView):
             items = sub.get("items", {}).get("data", [])
             if items:
                 price_id = items[0].get("price", {}).get("id")
-                for plan, config in settings.STRIPE_PRODUCTS.items():
-                    if config.get("price_id") == price_id:
-                        subscription.plan = plan
-                        break
+                plan_obj = Plan.objects.filter(
+                    db_models.Q(stripe_monthly_price_id=price_id)
+                    | db_models.Q(stripe_yearly_price_id=price_id)
+                ).first()
+                if plan_obj:
+                    subscription.plan = plan_obj.slug
+                else:
+                    # Fallback to hardcoded settings
+                    for plan_key, plan_config in settings.STRIPE_PRODUCTS.items():
+                        if plan_config.get("price_id") == price_id:
+                            subscription.plan = plan_key
+                            break
 
             subscription.save()
 
         # HIGH-01: If user downgraded, check if usage exceeds new plan limits
         new_plan = subscription.plan
         if old_plan != new_plan:
-            new_limits = settings.PLAN_LIMITS.get(new_plan, {})
+            new_limits = Plan.get_limits(new_plan)
             from apps.users.models import UsageTracking
             usage = UsageTracking.get_current_period(subscription.user)
 
@@ -389,3 +406,39 @@ class StripeWebhookView(APIView):
                 subscription.save(update_fields=["status"])
 
         logger.info(f"Payment succeeded for customer {customer_id}")
+
+
+class PlansListView(APIView):
+    """Public endpoint: list all enabled plans (including coming_soon)."""
+    permission_classes = [AllowAny]
+
+    @extend_schema(tags=["Billing"])
+    def get(self, request):
+        from django.core.cache import cache
+
+        cached = cache.get("plans_list")
+        if cached:
+            return Response(cached)
+
+        plans = Plan.objects.filter(is_enabled=True).order_by(
+            "sort_order", "monthly_price"
+        )
+        data = [
+            {
+                "slug": p.slug,
+                "name": p.name,
+                "description": p.description,
+                "is_coming_soon": p.is_coming_soon,
+                "is_popular": p.is_popular,
+                "badge_text": p.badge_text,
+                "cta_text": p.cta_text,
+                "features": p.features_json,
+                "monthly_price": p.monthly_price,
+                "yearly_price": p.yearly_price,
+                "limits": p.to_limits_dict(),
+            }
+            for p in plans
+        ]
+
+        cache.set("plans_list", data, timeout=300)
+        return Response(data)

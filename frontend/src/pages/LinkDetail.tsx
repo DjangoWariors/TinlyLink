@@ -5,7 +5,7 @@ import {
   ArrowLeft, Copy, ExternalLink, QrCode, Edit, Trash2,
   MousePointer, Users, Globe, Calendar, Lock, MoreVertical,
   Monitor, Smartphone, Tablet, BarChart3, Link2, MapPin,
-  TrendingUp, Share2, Shield
+  TrendingUp, Share2, Shield, FlaskConical
 } from 'lucide-react';
 
 import {
@@ -16,6 +16,7 @@ import { Button } from '@/components/common/Button';
 import { Card, CardHeader, CardTitle } from '@/components/common/Card';
 import { Badge, Loading, StatCard, Modal, Dropdown, DropdownItem, CopyButton, SkeletonDashboard } from '@/components/common';
 import { linksAPI, rulesAPI, getErrorMessage } from '@/services/api';
+import { ABTestingPanel } from '@/pages/ABTesting';
 import type { TopCountry, LinkStats, Rule } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -34,6 +35,7 @@ export function LinkDetailPage() {
   const queryClient = useQueryClient();
   const [period, setPeriod] = useState('30d');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'analytics' | 'ab-testing'>('analytics');
 
   // Fetch link details
   const { data: link, isLoading: linkLoading, isError: linkError } = useQuery({
@@ -237,6 +239,44 @@ export function LinkDetailPage() {
           icon={<Calendar className="w-5 h-5" />}
         />
       </div>
+
+      {/* Tab Navigation */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            activeTab === 'analytics'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab('ab-testing')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            activeTab === 'ab-testing'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <FlaskConical className="w-4 h-4" />
+            A/B Testing
+          </span>
+        </button>
+      </div>
+
+      {/* A/B Testing Tab */}
+      {activeTab === 'ab-testing' && id && (
+        <ABTestingPanel linkId={id} />
+      )}
+
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && <>
 
       {/* Period Selector + Chart Title */}
       <Card padding="none">
@@ -608,6 +648,8 @@ export function LinkDetailPage() {
           </div>
         </Card>
       </div>
+
+      </>}
 
       {/* Delete Modal */}
       <Modal

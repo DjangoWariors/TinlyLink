@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-    ArrowLeft, QrCode, Save, Download, Globe, Square,
+    ArrowLeft, QrCode, Save, Download, Globe, Shield,
 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/common/Card';
@@ -63,20 +63,10 @@ export function EditQRCodePage() {
         designActions.setGradientDirection((qrCode.gradient_direction as QRGradientDirection) || 'vertical');
         designActions.setFrameText(qrCode.frame_text || '');
         if (qrCode.logo_url) {
-            // Set logoPreview directly (no file yet)
-            designActions.removeLogo(); // reset file
-            // We need a way to set the preview without a file - use the URL directly
+            designActions.removeLogo(); // reset any lingering file state
         }
         if (qrCode.is_dynamic) {
             setDestinationUrl(qrCode.destination_url || qrCode.link_original_url || '');
-        }
-    }, [qrCode]);
-
-    // Set logo preview from server URL after initial load
-    useEffect(() => {
-        if (qrCode?.logo_url && !design.logoFile) {
-            // We can't use the hook's setter directly for preview-only,
-            // so we'll handle logoPreview display via the qrCode data
         }
     }, [qrCode]);
 
@@ -146,6 +136,14 @@ export function EditQRCodePage() {
     };
 
     const handleDownload = async (format: 'png' | 'svg') => {
+        // Try client-side download first (reflects current design state)
+        const svgEl = document.getElementById('qr-preview') as SVGSVGElement | null;
+        if (svgEl) {
+            download(svgEl, format, `qr-${qrCode?.link_short_code || id}`);
+            toast.success(`Downloaded ${format.toUpperCase()}`);
+            return;
+        }
+        // Fallback: server-side download
         if (!id) return;
         try {
             const blob = await qrCodesAPI.downloadQRCode(id, format);
@@ -203,7 +201,10 @@ export function EditQRCodePage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" onClick={() => handleDownload('png')}>
-                        <Download className="w-4 h-4 mr-2" /> Download
+                        <Download className="w-4 h-4 mr-2" /> PNG
+                    </Button>
+                    <Button variant="outline" onClick={() => handleDownload('svg')}>
+                        <Download className="w-4 h-4 mr-2" /> SVG
                     </Button>
                     <Button onClick={handleSave} isLoading={updateMutation.isPending} disabled={!hasChanges}>
                         <Save className="w-4 h-4 mr-2" /> Save Changes
@@ -244,17 +245,24 @@ export function EditQRCodePage() {
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2"><Square className="w-5 h-5" /> Smart Rules</CardTitle>
+                                <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5" /> Smart Rules</CardTitle>
                                 <Link to={`/dashboard/rules/new?qr_code=${id}`}>
                                     <Button variant="ghost" size="sm">Add Rule</Button>
                                 </Link>
                             </div>
+                            <CardDescription>Redirect users based on device, location, time, or language</CardDescription>
                         </CardHeader>
                         <div>
                             {rulesLoading ? (
                                 <div className="flex justify-center py-4"><Loading /></div>
                             ) : !linkedRules || linkedRules.length === 0 ? (
-                                <p className="text-sm text-gray-400 text-center py-4">No rules configured for this QR code</p>
+                                <div className="text-center py-6">
+                                    <Shield className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                                    <p className="text-sm text-gray-500 mb-3">No rules configured for this QR code</p>
+                                    <Link to={`/dashboard/rules/new?qr_code=${id}`}>
+                                        <Button variant="outline" size="sm">Create First Rule</Button>
+                                    </Link>
+                                </div>
                             ) : (
                                 <div className="space-y-2">
                                     {linkedRules.map((rule: Rule) => (
@@ -263,7 +271,12 @@ export function EditQRCodePage() {
                                                 <Badge variant={rule.is_active ? 'success' : 'default'}>
                                                     {rule.is_active ? 'Active' : 'Inactive'}
                                                 </Badge>
-                                                <span className="font-medium text-gray-900">{rule.name}</span>
+                                                <div>
+                                                    <span className="font-medium text-gray-900">{rule.name}</span>
+                                                    {rule.condition_type && (
+                                                        <span className="text-xs text-gray-500 ml-2 capitalize">{rule.condition_type.replace('_', ' ')}</span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <Link to={`/dashboard/rules/${rule.id}/edit`}>
                                                 <Button variant="ghost" size="sm">Edit</Button>
@@ -281,12 +294,12 @@ export function EditQRCodePage() {
                     <QRPreviewPanel
                         value={qrCode.short_url}
                         design={previewDesign}
+                        downloadFilename={`qr-${qrCode.link_short_code || id}`}
+                        showCancel={false}
                         primaryAction={
-                            <>
-                                <Button onClick={handleSave} isLoading={updateMutation.isPending} disabled={!hasChanges} className="w-full">
-                                    <Save className="w-4 h-4 mr-2" /> Save Changes
-                                </Button>
-                            </>
+                            <Button onClick={handleSave} isLoading={updateMutation.isPending} disabled={!hasChanges} className="w-full">
+                                <Save className="w-4 h-4 mr-2" /> Save Changes
+                            </Button>
                         }
                         extraContent={
                             <>
@@ -299,6 +312,18 @@ export function EditQRCodePage() {
                                         <span className="text-gray-500">Scans:</span>
                                         <span className="font-medium text-gray-900">{qrCode.total_scans.toLocaleString()}</span>
                                     </div>
+                                    {qrCode.is_dynamic && (
+                                        <div className="flex items-center justify-between text-sm mt-2">
+                                            <span className="text-gray-500">Type:</span>
+                                            <Badge variant="primary" className="text-xs">Dynamic</Badge>
+                                        </div>
+                                    )}
+                                    {linkedRules && linkedRules.length > 0 && (
+                                        <div className="flex items-center justify-between text-sm mt-2">
+                                            <span className="text-gray-500">Rules:</span>
+                                            <span className="font-medium text-gray-900">{linkedRules.length} active</span>
+                                        </div>
+                                    )}
                                 </div>
                                 {hasChanges && (
                                     <div className="mt-4 p-3 bg-warning/10 rounded-lg border border-warning/30 text-sm text-warning-dark">

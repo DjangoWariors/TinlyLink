@@ -226,8 +226,8 @@ def aggregate_daily_stats():
     return f"Created {created_count} daily stats"
 
 
-@shared_task(queue="analytics")
-def sync_click_counters():
+@shared_task(bind=True, queue="analytics", max_retries=2, default_retry_delay=60, time_limit=300)
+def sync_click_counters(self):
     """
     Sync click counters from Redis to database.
     Runs every 5 minutes.
@@ -346,6 +346,7 @@ def sync_click_counters():
 
     except Exception as e:
         logger.exception(f"Failed to sync click counters: {e}")
+        raise self.retry(exc=e)
 
     if updated_total or updated_unique:
         logger.info(f"Synced click counters: {updated_total} total, {updated_unique} unique")
@@ -353,8 +354,8 @@ def sync_click_counters():
     return f"Synced {updated_total} total, {updated_unique} unique"
 
 
-@shared_task(queue="analytics")
-def sync_qr_scan_counters():
+@shared_task(bind=True, queue="analytics", max_retries=2, default_retry_delay=60, time_limit=300)
+def sync_qr_scan_counters(self):
     """
     Sync QR scan counters from Redis to database.
     Runs every 5 minutes.
@@ -466,6 +467,7 @@ def sync_qr_scan_counters():
 
     except Exception as e:
         logger.exception(f"Failed to sync QR scan counters: {e}")
+        raise self.retry(exc=e)
 
     if updated_total or updated_unique:
         logger.info(f"Synced QR scan counters: {updated_total} total, {updated_unique} unique")
@@ -639,12 +641,9 @@ def export_analytics(user_id, period, format, link_ids=None):
     
     # Upload to S3
     if not settings.DEBUG:
-        import boto3
-        
-        s3_client = boto3.client(
-            "s3",
-            region_name=settings.AWS_S3_REGION_NAME,
-        )
+        from apps.common.storage import get_s3_client
+
+        s3_client = get_s3_client()
         
         path = f"exports/{user_id}/{filename}"
         s3_client.put_object(

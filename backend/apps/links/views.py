@@ -8,15 +8,17 @@ from rest_framework import status, generics, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.throttling import AnonRateThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from apps.users.permissions import CanCreateLinks, IsOwner
 from apps.users.models import UsageTracking
-from .models import Link, CustomDomain
+from .models import Link, CustomDomain, RetargetingPixel
 from .serializers import (
     LinkSerializer, CreateLinkSerializer, UpdateLinkSerializer,
-    BulkCreateLinksSerializer, CustomDomainSerializer, CreateCustomDomainSerializer
+    BulkCreateLinksSerializer, CustomDomainSerializer, CreateCustomDomainSerializer,
+    RetargetingPixelSerializer, CreatePixelSerializer, UpdatePixelSerializer,
 )
 
 
@@ -373,11 +375,17 @@ class CustomDomainVerifyView(APIView):
 # ANONYMOUS LINK CREATION
 # =============================================================================
 
+class PublicLinkCreateThrottle(AnonRateThrottle):
+    """Strict rate limit for anonymous link creation: 5 per hour."""
+    rate = "5/hour"
+
+
 class PublicLinkCreateView(APIView):
     """
     Create a link without authentication (rate limited).
     """
     permission_classes = [AllowAny]
+    throttle_classes = [PublicLinkCreateThrottle]
     
     @extend_schema(
         request=CreateLinkSerializer,
@@ -566,5 +574,62 @@ class BulkExportLinksView(APIView):
                     link.campaign.name if link.campaign else "",
                     link.created_at.strftime("%Y-%m-%d"),
                 ])
-            
+
             return response
+
+
+# =============================================================================
+# RETARGETING PIXELS
+# =============================================================================
+
+
+class PixelListCreateView(generics.ListCreateAPIView):
+    """List or create retargeting pixels."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = RetargetingPixelSerializer
+    pagination_class = None
+    def get_queryset(self):
+        team = getattr(self.request, "team", None)
+        if team:
+            return RetargetingPixel.objects.filter(team=team)
+        return RetargetingPixel.objects.filter(user=self.request.user, team__isnull=True)
+
+    @extend_schema(request=CreatePixelSerializer, responses={201: RetargetingPixelSerializer}, tags=["Pixels"])
+    def post(self, request, *args, **kwargs):
+        serializer = CreatePixelSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        team = getattr(request, "team", None)
+        pixel = RetargetingPixel.objects.create(
+            user=request.user,
+            team=team,
+            **serializer.validated_data,
+        )
+        return Response(
+            RetargetingPixelSerializer(pixel).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class PixelDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Get, update, or delete a retargeting pixel."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = RetargetingPixelSerializer
+
+    def get_queryset(self):
+        team = getattr(self.request, "team", None)
+        if team:
+            return RetargetingPixel.objects.filter(team=team)
+        return RetargetingPixel.objects.filter(user=self.request.user, team__isnull=True)
+
+    @extend_schema(request=UpdatePixelSerializer, responses={200: RetargetingPixelSerializer}, tags=["Pixels"])
+    def patch(self, request, *args, **kwargs):
+        pixel = self.get_object()
+        serializer = UpdatePixelSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        for field, value in serializer.validated_data.items():
+            setattr(pixel, field, value)
+        pixel.save()
+
+        return Response(RetargetingPixelSerializer(pixel).data)

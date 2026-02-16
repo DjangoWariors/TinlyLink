@@ -6,7 +6,7 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = config("DJANGO_SECRET_KEY", default="change-me-in-production")
+SECRET_KEY = config("DJANGO_SECRET_KEY", default="change-me-in-production-not-for-real-use!")
 
 
 DATABASES = {
@@ -67,6 +67,7 @@ LOCAL_APPS = [
     "apps.public",
     "apps.teams",
     "apps.rules",
+    "apps.biolinks",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -169,7 +170,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/hour",
+        "anon": "20/hour",
         "user": "1000/hour",
     },
     "EXCEPTION_HANDLER": "apps.users.exceptions.custom_exception_handler",
@@ -269,7 +270,7 @@ GEOIP_PATH = config("GEOIP_PATH", default="/var/lib/geoip")
 
 
 
-DEFAULT_SHORT_DOMAIN = config("DEFAULT_SHORT_DOMAIN", default="tinlylink.com")
+DEFAULT_SHORT_DOMAIN = config("DEFAULT_SHORT_DOMAIN", default="127.0.0.1:8000")
 
 
 PLAN_LIMITS = {
@@ -283,6 +284,9 @@ PLAN_LIMITS = {
         "password_protection": False,
         "show_ads": True,
         "team_members": 0,
+        "bio_pages_limit": 1,
+        "landing_pages_limit": 0,
+        "retargeting_pixels": False,
     },
     "pro": {
         "links_per_month": 500,
@@ -294,6 +298,9 @@ PLAN_LIMITS = {
         "password_protection": True,
         "show_ads": False,
         "team_members": 0,
+        "bio_pages_limit": 5,
+        "landing_pages_limit": 3,
+        "retargeting_pixels": True,
     },
     "business": {
         "links_per_month": 5000,
@@ -306,6 +313,9 @@ PLAN_LIMITS = {
         "show_ads": False,
         "team_members": 15,
         "serial_batch_limit": 10000,
+        "bio_pages_limit": -1,
+        "landing_pages_limit": -1,
+        "retargeting_pixels": True,
     },
     "enterprise": {
         "links_per_month": -1,  # Unlimited
@@ -322,6 +332,9 @@ PLAN_LIMITS = {
         "dedicated_account_manager": True,
         "custom_integrations": True,
         "serial_batch_limit": 100000,
+        "bio_pages_limit": -1,
+        "landing_pages_limit": -1,
+        "retargeting_pixels": True,
     },
 }
 

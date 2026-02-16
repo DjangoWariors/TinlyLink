@@ -4,7 +4,7 @@ Admin configuration for links app.
 
 from django.contrib import admin
 
-from .models import Link, CustomDomain
+from .models import Link, CustomDomain, RetargetingPixel
 
 
 @admin.register(Link)
@@ -58,3 +58,12 @@ class CustomDomainAdmin(admin.ModelAdmin):
     search_fields = ["domain", "user__email"]
     raw_id_fields = ["user"]
     readonly_fields = ["dns_txt_record", "verified_at", "created_at", "updated_at"]
+
+
+@admin.register(RetargetingPixel)
+class RetargetingPixelAdmin(admin.ModelAdmin):
+    list_display = ["name", "platform", "pixel_id", "user", "is_active", "created_at"]
+    list_filter = ["platform", "is_active", "created_at"]
+    search_fields = ["name", "pixel_id", "user__email"]
+    raw_id_fields = ["user", "team"]
+    readonly_fields = ["created_at", "updated_at"]

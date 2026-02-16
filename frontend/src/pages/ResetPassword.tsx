@@ -6,11 +6,15 @@ import { z } from 'zod';
 import { Lock, CheckCircle, XCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
+import { SEO } from '@/components/common/SEO';
 import { authAPI } from '@/services/api';
 import toast from 'react-hot-toast';
 
 const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Must contain at least one number'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -53,10 +57,12 @@ export function ResetPasswordPage() {
       setIsSuccess(true);
       toast.success('Password reset successfully!');
     } catch (error: any) {
-      if (error.response?.status === 400) {
+      if (!error.response) {
+        toast.error('Network error. Please check your connection.');
+      } else if (error.response.status === 400) {
         setIsInvalidToken(true);
       } else {
-        toast.error(error.response?.data?.error || 'Failed to reset password');
+        toast.error(error.response?.data?.error || 'Failed to reset password.');
       }
     } finally {
       setIsLoading(false);
@@ -120,6 +126,7 @@ export function ResetPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <SEO title="Reset Password - TinlyLink" description="Set a new password for your TinlyLink account." />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <Link to="/" className="flex justify-center">
@@ -131,7 +138,7 @@ export function ResetPasswordPage() {
           Set new password
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Your new password must be at least 8 characters long.
+          At least 8 characters, one uppercase letter, one number.
         </p>
       </div>
 
@@ -142,6 +149,8 @@ export function ResetPasswordPage() {
               label="New password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
+              autoFocus
+              disabled={isLoading}
               leftIcon={<Lock className="w-4 h-4" />}
               rightIcon={
                 <button
@@ -161,6 +170,7 @@ export function ResetPasswordPage() {
               label="Confirm new password"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
+              disabled={isLoading}
               leftIcon={<Lock className="w-4 h-4" />}
               rightIcon={
                 <button

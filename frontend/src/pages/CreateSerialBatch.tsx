@@ -22,11 +22,13 @@ import {
   Link2,
   AlertCircle,
   Trash2,
+  QrCode,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button, Input, Card, Badge, Modal } from '@/components/common';
+import { QRFramedRenderer } from '@/components/qr';
 import { serialAPI } from '@/services/api';
-import type { CreateSerialBatchData } from '@/types';
+import type { CreateSerialBatchData, QRStyle, QRFrame, QREyeStyle, QRGradientDirection } from '@/types';
 
 // Form schema
 const batchSchema = z.object({
@@ -193,8 +195,7 @@ export function CreateSerialBatchPage() {
         };
         batch = await serialAPI.batches.create(payload);
       }
-      // Automatically start generation
-      await serialAPI.batches.generate(batch.id);
+      // Backend starts generation automatically (start_immediately=True default)
       return batch;
     },
     onSuccess: (batch) => {
@@ -241,7 +242,7 @@ export function CreateSerialBatchPage() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" onClick={() => navigate('/dashboard/serial-batches')}>
@@ -447,7 +448,8 @@ export function CreateSerialBatchPage() {
 
         {/* Step 3: Styling */}
         {currentStep === 2 && (
-          <Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
             <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
               <Palette className="w-5 h-5 text-primary" />
               QR Code Styling
@@ -727,6 +729,46 @@ export function CreateSerialBatchPage() {
               </div>
             </div>
           </Card>
+
+          {/* Live QR Preview Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-6">
+              <Card>
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <QrCode className="w-5 h-5" />
+                  Preview
+                </h3>
+                <div
+                  className="flex items-center justify-center p-4 rounded-xl border-2 border-gray-100"
+                  style={{ backgroundColor: watchedValues.background_color || '#FFFFFF' }}
+                >
+                  <QRFramedRenderer
+                    value={watchedValues.destination_url_template?.replace('{serial}', `${watchedValues.prefix || ''}SAMPLE01`) || 'https://example.com/verify/SAMPLE01'}
+                    size={180}
+                    style={(watchedValues.style as QRStyle) || 'square'}
+                    frame={(watchedValues.frame as QRFrame) || 'none'}
+                    fgColor={watchedValues.foreground_color || '#000000'}
+                    bgColor={watchedValues.background_color || '#FFFFFF'}
+                    level="H"
+                    logoUrl={logoPreview || undefined}
+                    eyeStyle={(watchedValues.eye_style as QREyeStyle) || 'square'}
+                    eyeColor={watchedValues.eye_color || undefined}
+                    gradientEnabled={watchedValues.gradient_enabled || false}
+                    gradientStart={watchedValues.gradient_start || '#000000'}
+                    gradientEnd={watchedValues.gradient_end || '#666666'}
+                    gradientDirection={(watchedValues.gradient_direction as QRGradientDirection) || 'vertical'}
+                  />
+                </div>
+                <p className="text-xs text-gray-400 text-center mt-3">
+                  Sample: {watchedValues.prefix || ''}SAMPLE01
+                </p>
+                <p className="text-xs text-gray-400 text-center mt-1 capitalize">
+                  {watchedValues.style} • {watchedValues.frame !== 'none' ? `${watchedValues.frame?.replace('_', ' ')} frame` : 'No frame'}
+                </p>
+              </Card>
+            </div>
+          </div>
+          </div>
         )}
 
         {/* Step 4: Review */}
@@ -738,120 +780,154 @@ export function CreateSerialBatchPage() {
             </h2>
 
             <div className="space-y-6">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Batch Info */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                    <Package className="w-4 h-4" />
-                    Batch Details
-                  </h3>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Name:</dt>
-                      <dd className="font-medium">{watchedValues.name || 'Not set'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Quantity:</dt>
-                      <dd className="font-medium">{watchedValues.quantity?.toLocaleString()}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Prefix:</dt>
-                      <dd className="font-mono">{watchedValues.prefix || 'None'}</dd>
-                    </div>
-                  </dl>
+              {/* QR Preview + Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* QR Preview */}
+                <div className="md:col-span-1 flex flex-col items-center">
+                  <div
+                    className="p-4 rounded-xl border-2 border-gray-100 inline-flex"
+                    style={{ backgroundColor: watchedValues.background_color || '#FFFFFF' }}
+                  >
+                    <QRFramedRenderer
+                      value={watchedValues.destination_url_template?.replace('{serial}', `${watchedValues.prefix || ''}SAMPLE01`) || 'https://example.com/verify/SAMPLE01'}
+                      size={180}
+                      style={(watchedValues.style as QRStyle) || 'square'}
+                      frame={(watchedValues.frame as QRFrame) || 'none'}
+                      fgColor={watchedValues.foreground_color || '#000000'}
+                      bgColor={watchedValues.background_color || '#FFFFFF'}
+                      level="H"
+                      logoUrl={logoPreview || undefined}
+                      eyeStyle={(watchedValues.eye_style as QREyeStyle) || 'square'}
+                      eyeColor={watchedValues.eye_color || undefined}
+                      gradientEnabled={watchedValues.gradient_enabled || false}
+                      gradientStart={watchedValues.gradient_start || '#000000'}
+                      gradientEnd={watchedValues.gradient_end || '#666666'}
+                      gradientDirection={(watchedValues.gradient_direction as QRGradientDirection) || 'vertical'}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 text-center mt-2">
+                    Sample: {watchedValues.prefix || ''}SAMPLE01
+                  </p>
+                  <p className="text-sm text-gray-500 text-center mt-1">
+                    This is how each QR code in the batch will look
+                  </p>
                 </div>
 
-                {/* Product Info */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                    <Tag className="w-4 h-4" />
-                    Product Info
-                  </h3>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Product:</dt>
-                      <dd className="font-medium">{watchedValues.product_name || 'Not set'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">SKU:</dt>
-                      <dd className="font-mono">{watchedValues.product_sku || 'Not set'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-gray-500">Category:</dt>
-                      <dd>{watchedValues.product_category || 'Not set'}</dd>
-                    </div>
-                  </dl>
-                </div>
+                {/* Summary Cards */}
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Batch Info */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <Package className="w-4 h-4" />
+                      Batch Details
+                    </h3>
+                    <dl className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Name:</dt>
+                        <dd className="font-medium">{watchedValues.name || 'Not set'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Quantity:</dt>
+                        <dd className="font-medium">{watchedValues.quantity?.toLocaleString()}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Prefix:</dt>
+                        <dd className="font-mono">{watchedValues.prefix || 'None'}</dd>
+                      </div>
+                    </dl>
+                  </div>
 
-                {/* Styling */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                    <Palette className="w-4 h-4" />
-                    Styling
-                  </h3>
-                  <dl className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <dt className="text-gray-500">Style:</dt>
-                      <dd className="font-medium capitalize">{watchedValues.style}</dd>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-gray-500">Frame:</dt>
-                      <dd className="font-medium capitalize">{watchedValues.frame?.replace('_', ' ')}</dd>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-gray-500">Eye Style:</dt>
-                      <dd className="font-medium capitalize">{watchedValues.eye_style}</dd>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-gray-500">Colors:</dt>
-                      <dd className="flex items-center gap-2">
-                        <span
-                          className="w-5 h-5 rounded border"
-                          style={{ backgroundColor: watchedValues.foreground_color }}
-                        />
-                        <span
-                          className="w-5 h-5 rounded border"
-                          style={{ backgroundColor: watchedValues.background_color }}
-                        />
-                        {watchedValues.eye_color && (
-                          <span
-                            className="w-5 h-5 rounded border"
-                            style={{ backgroundColor: watchedValues.eye_color }}
-                            title="Eye color"
-                          />
-                        )}
-                      </dd>
-                    </div>
-                    {watchedValues.gradient_enabled && (
+                  {/* Product Info */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      Product Info
+                    </h3>
+                    <dl className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Product:</dt>
+                        <dd className="font-medium">{watchedValues.product_name || 'Not set'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">SKU:</dt>
+                        <dd className="font-mono">{watchedValues.product_sku || 'Not set'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-gray-500">Category:</dt>
+                        <dd>{watchedValues.product_category || 'Not set'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Styling */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <Palette className="w-4 h-4" />
+                      Styling
+                    </h3>
+                    <dl className="space-y-2 text-sm">
                       <div className="flex justify-between items-center">
-                        <dt className="text-gray-500">Gradient:</dt>
+                        <dt className="text-gray-500">Style:</dt>
+                        <dd className="font-medium capitalize">{watchedValues.style}</dd>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <dt className="text-gray-500">Frame:</dt>
+                        <dd className="font-medium capitalize">{watchedValues.frame?.replace('_', ' ')}</dd>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <dt className="text-gray-500">Eye Style:</dt>
+                        <dd className="font-medium capitalize">{watchedValues.eye_style}</dd>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <dt className="text-gray-500">Colors:</dt>
                         <dd className="flex items-center gap-2">
                           <span
                             className="w-5 h-5 rounded border"
-                            style={{ backgroundColor: watchedValues.gradient_start }}
+                            style={{ backgroundColor: watchedValues.foreground_color }}
                           />
-                          <span className="text-gray-400">→</span>
                           <span
                             className="w-5 h-5 rounded border"
-                            style={{ backgroundColor: watchedValues.gradient_end }}
+                            style={{ backgroundColor: watchedValues.background_color }}
                           />
-                          <span className="text-xs capitalize">{watchedValues.gradient_direction}</span>
+                          {watchedValues.eye_color && (
+                            <span
+                              className="w-5 h-5 rounded border"
+                              style={{ backgroundColor: watchedValues.eye_color }}
+                              title="Eye color"
+                            />
+                          )}
                         </dd>
                       </div>
-                    )}
-                  </dl>
-                </div>
+                      {watchedValues.gradient_enabled && (
+                        <div className="flex justify-between items-center">
+                          <dt className="text-gray-500">Gradient:</dt>
+                          <dd className="flex items-center gap-2">
+                            <span
+                              className="w-5 h-5 rounded border"
+                              style={{ backgroundColor: watchedValues.gradient_start }}
+                            />
+                            <span className="text-gray-400">&rarr;</span>
+                            <span
+                              className="w-5 h-5 rounded border"
+                              style={{ backgroundColor: watchedValues.gradient_end }}
+                            />
+                            <span className="text-xs capitalize">{watchedValues.gradient_direction}</span>
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
 
-                {/* URL Template */}
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                    <Link2 className="w-4 h-4" />
-                    Verification URL
-                  </h3>
-                  <p className="text-sm font-mono break-all text-gray-600">
-                    {watchedValues.destination_url_template}
-                  </p>
+                  {/* URL Template */}
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                      <Link2 className="w-4 h-4" />
+                      Verification URL
+                    </h3>
+                    <p className="text-sm font-mono break-all text-gray-600">
+                      {watchedValues.destination_url_template}
+                    </p>
+                  </div>
                 </div>
               </div>
 

@@ -15,8 +15,8 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
-@shared_task(queue="analytics")
-def track_click(click_data):
+@shared_task(bind=True, queue="analytics", max_retries=3, default_retry_delay=30)
+def track_click(self, click_data):
     """
     Process and store click event.
     Called asynchronously after redirect.
@@ -92,6 +92,7 @@ def track_click(click_data):
 
     except Exception as e:
         logger.exception(f"Failed to track click: {e}")
+        raise self.retry(exc=e)
 
 
 def parse_user_agent(ua_string):

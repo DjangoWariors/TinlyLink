@@ -183,8 +183,9 @@ class Subscription(models.Model):
     
     @property
     def limits(self):
-        """Get plan limits from settings."""
-        return settings.PLAN_LIMITS.get(self.plan, settings.PLAN_LIMITS["free"])
+        """Get plan limits from DB (cached), with settings fallback."""
+        from apps.billing.models import Plan
+        return Plan.get_limits(self.plan)
     
     def can_create_link(self, current_count):
         """Check if user can create another link."""

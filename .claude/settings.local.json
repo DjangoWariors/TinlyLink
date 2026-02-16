@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(del \"D:\\\\fly_me\\\\update-me\\\\me\\\\frontend\\\\src\\\\components\\\\QRCodeGenerator.tsx\")"
+      "Bash(del \"D:\\\\fly_me\\\\update-me\\\\me\\\\frontend\\\\src\\\\components\\\\QRCodeGenerator.tsx\")",
+      "Bash(python -c:*)",
+      "WebSearch"
     ]
   }
 }

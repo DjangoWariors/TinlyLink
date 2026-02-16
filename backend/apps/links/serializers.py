@@ -8,7 +8,7 @@ from apps.users.models import UsageTracking
 from apps.users.exceptions import (
     UsageLimitExceeded, FeatureNotAvailable, InvalidURL, SlugNotAvailable
 )
-from .models import Link, CustomDomain
+from .models import Link, CustomDomain, RetargetingPixel
 
 
 class CustomDomainSerializer(serializers.ModelSerializer):
@@ -351,6 +351,41 @@ class BulkCreateLinksSerializer(serializers.Serializer):
         max_length=100
     )
     campaign_id = serializers.UUIDField(required=False, allow_null=True)
+
+
+class RetargetingPixelSerializer(serializers.ModelSerializer):
+    """Serializer for RetargetingPixel model."""
+
+    links_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RetargetingPixel
+        fields = [
+            "id", "name", "platform", "pixel_id", "custom_script",
+            "is_active", "links_count", "created_at", "updated_at"
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_links_count(self, obj):
+        return obj.links.count()
+
+
+class CreatePixelSerializer(serializers.Serializer):
+    """Serializer for creating a retargeting pixel."""
+
+    name = serializers.CharField(max_length=100)
+    platform = serializers.ChoiceField(choices=RetargetingPixel.PLATFORM_CHOICES)
+    pixel_id = serializers.CharField(max_length=255)
+    custom_script = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class UpdatePixelSerializer(serializers.Serializer):
+    """Serializer for updating a retargeting pixel."""
+
+    name = serializers.CharField(max_length=100, required=False)
+    pixel_id = serializers.CharField(max_length=255, required=False)
+    custom_script = serializers.CharField(required=False, allow_blank=True)
+    is_active = serializers.BooleanField(required=False)
 
 
 class LinkStatsSerializer(serializers.Serializer):

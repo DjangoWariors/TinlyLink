@@ -10,6 +10,7 @@ from .views import (
     CustomDomainListCreateView, CustomDomainDetailView, CustomDomainVerifyView,
     BulkDeleteLinksView, BulkMoveLinksView, BulkExportLinksView,
     CheckSlugAvailabilityView,
+    PixelListCreateView, PixelDetailView,
 )
 from .views_import_export import (
     LinksExportView, LinksImportView, LinksImportTemplateView
@@ -38,4 +39,8 @@ urlpatterns = [
     path("domains/", CustomDomainListCreateView.as_view(), name="domain_list_create"),
     path("domains/<uuid:pk>/", CustomDomainDetailView.as_view(), name="domain_detail"),
     path("domains/<uuid:pk>/verify/", CustomDomainVerifyView.as_view(), name="domain_verify"),
+
+    # Retargeting Pixels
+    path("pixels/", PixelListCreateView.as_view(), name="pixel_list_create"),
+    path("pixels/<uuid:pk>/", PixelDetailView.as_view(), name="pixel_detail"),
 ]
